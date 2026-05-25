@@ -1164,9 +1164,24 @@ function applyAutofill(){
     const s=jsonStr.indexOf('{'), e=jsonStr.lastIndexOf('}');
     if(s>=0 && e>s) jsonStr=jsonStr.slice(s, e+1);
   }
+  // Normalize common copy-paste gremlins that break JSON.parse:
+  //  - "smart" curly quotes (ChatGPT/macOS autocorrect)
+  //  - non-breaking spaces
+  //  - trailing commas before } or ]
+  const before=jsonStr;
+  jsonStr = jsonStr
+    .replace(/[“”„‟]/g, '"')  // double smart quotes
+    .replace(/[‘’‚‛]/g, "'")  // single smart quotes
+    .replace(/ /g, ' ')                      // non-breaking space
+    .replace(/,(\s*[}\]])/g, '$1');               // trailing commas
+  const normalized = (jsonStr !== before);
+
   let data;
   try{ data=JSON.parse(jsonStr); }
-  catch(e){ setAfStatus('Could not parse JSON: '+e.message, 'err'); return; }
+  catch(e){
+    const tip = normalized ? '' : ' (Tip: paste only the JSON object — strip any surrounding prose.)';
+    setAfStatus('Could not parse JSON: '+e.message+tip, 'err'); return;
+  }
 
   let filled=0, nulls=0, invalid=0, notes=0;
   const allQs=[]; RUBRIC.forEach(s=>{ if(!s.profile) s.questions.forEach(q=>allQs.push(q)); });
