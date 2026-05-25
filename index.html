@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Signal — AI &amp; Vendor Risk Vetting</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700;9..144,900&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f4f1ea;
+    --paper-2:#ece7db;
+    --ink:#1c1a17;
+    --ink-soft:#4a463f;
+    --ink-faint:#7c766b;
+    --line:#d8d2c4;
+    --line-strong:#c4bdac;
+    --red:#b8392f;
+    --red-bg:#f6e2df;
+    --yellow:#b07d12;
+    --yellow-bg:#f6eccf;
+    --green:#3a7d44;
+    --green-bg:#dfeede;
+    --accent:#1c1a17;
+    --shadow:0 1px 0 rgba(0,0,0,.04), 0 12px 30px -18px rgba(28,26,23,.4);
+    --radius:3px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Newsreader',Georgia,serif;
+    font-size:18px;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+    background-image:radial-gradient(circle at 1px 1px, rgba(28,26,23,.025) 1px, transparent 0);
+    background-size:22px 22px;
+  }
+  ::selection{background:var(--ink);color:var(--paper)}
+
+  /* ---- Header ---- */
+  .topbar{
+    border-bottom:2px solid var(--ink);
+    background:var(--paper);
+    position:sticky;top:0;z-index:50;
+  }
+  .topbar-inner{
+    max-width:1180px;margin:0 auto;padding:14px 28px;
+    display:flex;align-items:center;justify-content:space-between;gap:20px;
+  }
+  .brand{display:flex;align-items:baseline;gap:12px;cursor:pointer}
+  .brand .mark{
+    font-family:'Fraunces',serif;font-weight:900;font-size:30px;letter-spacing:-.02em;line-height:1;
+  }
+  .brand .mark .dot-r{color:var(--red)}
+  .brand .mark .dot-y{color:var(--yellow)}
+  .brand .mark .dot-g{color:var(--green)}
+  .brand .tag{
+    font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--ink-faint);border-left:1px solid var(--line-strong);padding-left:12px;
+  }
+  .nav{display:flex;gap:6px;align-items:center}
+  .nav button{
+    font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.06em;text-transform:uppercase;
+    background:none;border:1px solid transparent;color:var(--ink-soft);
+    padding:8px 14px;cursor:pointer;border-radius:var(--radius);transition:.15s;
+  }
+  .nav button:hover{background:var(--paper-2)}
+  .nav button.active{background:var(--ink);color:var(--paper)}
+
+  .wrap{max-width:1180px;margin:0 auto;padding:0 28px}
+  .view{display:none;padding:40px 0 90px}
+  .view.show{display:block;animation:fade .4s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+  /* ---- Hero / home ---- */
+  .hero{padding:30px 0 10px;border-bottom:1px solid var(--line);margin-bottom:34px}
+  .hero h1{
+    font-family:'Fraunces',serif;font-weight:900;font-size:clamp(40px,7vw,82px);
+    line-height:.95;letter-spacing:-.03em;max-width:14ch;
+  }
+  .hero h1 em{font-style:italic;font-weight:500}
+  .hero .lede{
+    font-size:21px;color:var(--ink-soft);max-width:62ch;margin-top:22px;line-height:1.45;
+  }
+  .hero .lede strong{color:var(--ink);font-weight:600}
+  .cta-row{display:flex;gap:14px;margin-top:30px;flex-wrap:wrap}
+  .btn{
+    font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:.05em;text-transform:uppercase;
+    border:1.5px solid var(--ink);background:var(--ink);color:var(--paper);
+    padding:14px 24px;cursor:pointer;border-radius:var(--radius);transition:.18s;text-decoration:none;display:inline-flex;align-items:center;gap:9px;
+  }
+  .btn:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+  .btn.ghost{background:none;color:var(--ink)}
+  .btn.ghost:hover{background:var(--paper-2)}
+  .btn.sm{padding:9px 16px;font-size:11px}
+  .btn.danger{border-color:var(--red);color:var(--red);background:none}
+  .btn.danger:hover{background:var(--red-bg)}
+
+  /* lights legend on hero */
+  .legend{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:48px}
+  .legend .lcard{border:1px solid var(--line-strong);border-radius:var(--radius);padding:22px;background:var(--paper);position:relative;overflow:hidden}
+  .legend .lcard::before{content:"";position:absolute;top:0;left:0;width:6px;height:100%}
+  .legend .green::before{background:var(--green)}
+  .legend .yellow::before{background:var(--yellow)}
+  .legend .red::before{background:var(--red)}
+  .legend .dot{width:14px;height:14px;border-radius:50%;display:inline-block;margin-right:9px;vertical-align:middle}
+  .legend .green .dot{background:var(--green)}
+  .legend .yellow .dot{background:var(--yellow)}
+  .legend .red .dot{background:var(--red)}
+  .legend h3{font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px}
+  .legend p{font-size:16px;color:var(--ink-soft);line-height:1.4}
+
+  .home-sub{font-family:'Fraunces',serif;font-weight:700;font-size:26px;margin:60px 0 8px;letter-spacing:-.01em}
+  .home-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;background:var(--line);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;margin-top:18px}
+  .home-steps .step{background:var(--paper);padding:22px 20px}
+  .home-steps .num{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-faint);letter-spacing:.1em}
+  .home-steps h4{font-family:'Fraunces',serif;font-size:19px;font-weight:600;margin:8px 0 6px}
+  .home-steps p{font-size:15px;color:var(--ink-soft);line-height:1.4}
+
+  /* ---- Library ---- */
+  .section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;border-bottom:2px solid var(--ink);padding-bottom:14px;margin-bottom:28px;flex-wrap:wrap}
+  .section-head h2{font-family:'Fraunces',serif;font-weight:900;font-size:clamp(30px,5vw,48px);letter-spacing:-.02em;line-height:1}
+  .section-head .sub{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-faint);letter-spacing:.08em;text-transform:uppercase;margin-top:6px}
+  .lib-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px}
+  .tool-card{
+    border:1px solid var(--line-strong);border-radius:var(--radius);background:var(--paper);
+    padding:0;overflow:hidden;cursor:pointer;transition:.18s;position:relative;display:flex;flex-direction:column;
+  }
+  .tool-card:hover{transform:translateY(-3px);box-shadow:var(--shadow);border-color:var(--ink)}
+  .tool-card .band{height:7px;width:100%}
+  .band.GREEN{background:var(--green)}.band.YELLOW{background:var(--yellow)}.band.RED{background:var(--red)}
+  .tool-card .body{padding:20px 22px 18px}
+  .tool-card h3{font-family:'Fraunces',serif;font-weight:700;font-size:23px;letter-spacing:-.01em;margin-bottom:3px}
+  .tool-card .vendor{font-size:15px;color:var(--ink-faint);font-style:italic;margin-bottom:14px}
+  .pill{
+    display:inline-flex;align-items:center;gap:7px;font-family:'IBM Plex Mono',monospace;font-size:11px;
+    letter-spacing:.08em;text-transform:uppercase;padding:5px 11px;border-radius:100px;font-weight:600;
+  }
+  .pill .d{width:9px;height:9px;border-radius:50%}
+  .pill.GREEN{background:var(--green-bg);color:var(--green)}.pill.GREEN .d{background:var(--green)}
+  .pill.YELLOW{background:var(--yellow-bg);color:var(--yellow)}.pill.YELLOW .d{background:var(--yellow)}
+  .pill.RED{background:var(--red-bg);color:var(--red)}.pill.RED .d{background:var(--red)}
+  .tool-card .meta{display:flex;justify-content:space-between;align-items:center;margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
+  .tool-card .score{font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--ink-soft)}
+  .tool-card .score b{font-size:21px;color:var(--ink);font-weight:600}
+  .tool-card .date{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-faint)}
+  .tool-card .acts{display:flex;gap:0;border-top:1px solid var(--line);margin-top:0}
+  .tool-card .acts button{flex:1;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.05em;text-transform:uppercase;background:none;border:none;border-right:1px solid var(--line);color:var(--ink-soft);padding:11px 6px;cursor:pointer;transition:.13s;display:flex;align-items:center;justify-content:center;gap:6px}
+  .tool-card .acts button:last-child{border-right:none}
+  .tool-card .acts button:hover{background:var(--ink);color:var(--paper)}
+  .tool-card .acts button.del:hover{background:var(--red);color:var(--paper)}
+  .empty{border:2px dashed var(--line-strong);border-radius:var(--radius);padding:60px 30px;text-align:center;color:var(--ink-faint)}
+  .empty h3{font-family:'Fraunces',serif;font-size:26px;color:var(--ink-soft);margin-bottom:10px;font-weight:600}
+
+  /* ---- Form / assessment ---- */
+  .assess-layout{display:grid;grid-template-columns:230px 1fr;gap:36px;align-items:start}
+  .rail{position:sticky;top:90px}
+  .rail ol{list-style:none;counter-reset:s}
+  .rail li{counter-increment:s;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.04em;color:var(--ink-faint);padding:9px 0 9px 30px;position:relative;cursor:pointer;border-left:2px solid var(--line);transition:.15s;line-height:1.3}
+  .rail li::before{content:counter(s,decimal-leading-zero);position:absolute;left:10px;top:9px;font-size:11px}
+  .rail li:hover{color:var(--ink)}
+  .rail li.done{color:var(--green);border-left-color:var(--green)}
+  .rail li.active{color:var(--ink);border-left-color:var(--ink);font-weight:600}
+
+  .fcard{border:1px solid var(--line-strong);border-radius:var(--radius);background:var(--paper);margin-bottom:22px;overflow:hidden;scroll-margin-top:84px}
+  .fcard > .fhead{padding:20px 26px 16px;border-bottom:1px solid var(--line);background:var(--paper-2)}
+  .fcard .fhead .kicker{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-faint)}
+  .fcard .fhead h3{font-family:'Fraunces',serif;font-weight:700;font-size:25px;letter-spacing:-.01em;margin-top:4px}
+  .fcard .fhead p{font-size:16px;color:var(--ink-soft);margin-top:7px;max-width:70ch;line-height:1.45}
+  .fbody{padding:8px 26px 22px}
+
+  .q{padding:18px 0;border-bottom:1px solid var(--line)}
+  .q:last-child{border-bottom:none}
+  .q .qtop{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}
+  .q label.qtext{font-size:18px;font-weight:500;color:var(--ink);line-height:1.4;flex:1}
+  .q .wt{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-faint);border:1px solid var(--line-strong);padding:3px 7px;border-radius:100px;white-space:nowrap;margin-top:2px}
+  .q .wt.crit{color:var(--red);border-color:var(--red)}
+  .explain{font-size:15.5px;color:var(--ink-soft);background:var(--paper-2);border-left:3px solid var(--line-strong);padding:11px 15px;margin:11px 0 14px;border-radius:0 var(--radius) var(--radius) 0;line-height:1.45;font-style:italic}
+  .explain b{font-style:normal;color:var(--ink);font-weight:600}
+  .opts{display:flex;gap:9px;flex-wrap:wrap}
+  .opt{flex:1;min-width:140px}
+  .opt input{position:absolute;opacity:0;pointer-events:none}
+  .opt label{
+    display:block;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:12.5px;letter-spacing:.03em;
+    border:1.5px solid var(--line-strong);border-radius:var(--radius);padding:12px 10px;cursor:pointer;transition:.14s;color:var(--ink-soft);background:var(--paper);
+  }
+  .opt label:hover{border-color:var(--ink-faint)}
+  .opt input:checked + label{border-color:var(--ink);background:var(--ink);color:var(--paper);font-weight:600}
+  .opt.good input:checked + label{background:var(--green);border-color:var(--green)}
+  .opt.mid input:checked + label{background:var(--yellow);border-color:var(--yellow)}
+  .opt.bad input:checked + label{background:var(--red);border-color:var(--red)}
+  textarea,input[type=text],input[type=url]{
+    width:100%;font-family:'Newsreader',serif;font-size:17px;color:var(--ink);
+    border:1.5px solid var(--line-strong);border-radius:var(--radius);padding:12px 14px;background:var(--paper);resize:vertical;
+  }
+  textarea:focus,input:focus{outline:none;border-color:var(--ink)}
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .field{margin:14px 0}
+  .field > label{display:block;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:7px}
+  .note{margin-top:10px}
+  .note textarea{min-height:60px;font-size:15px}
+  .note .nl{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:5px;display:block}
+
+  /* sticky score bar */
+  .scorebar{
+    position:sticky;bottom:0;z-index:40;margin-top:26px;
+    background:var(--ink);color:var(--paper);border-radius:var(--radius);
+    padding:16px 24px;display:flex;align-items:center;justify-content:space-between;gap:20px;box-shadow:0 -8px 30px -16px rgba(0,0,0,.5);flex-wrap:wrap;
+  }
+  .scorebar .live{display:flex;align-items:center;gap:18px}
+  .scorebar .ring{position:relative;width:54px;height:54px}
+  .scorebar .ring svg{transform:rotate(-90deg)}
+  .scorebar .ring .pct{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:600}
+  .scorebar .verdict{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.08em;text-transform:uppercase;opacity:.7}
+  .scorebar .verdict b{display:block;font-size:22px;font-family:'Fraunces',serif;letter-spacing:0;text-transform:none;margin-top:2px}
+  .scorebar .vG b{color:#8fd49a}.scorebar .vY b{color:#f0cf76}.scorebar .vR b{color:#f0978d}
+  .scorebar .acts{display:flex;gap:10px}
+  .scorebar .btn{border-color:var(--paper)}
+  .scorebar .btn.ghost{color:var(--paper)}
+  .scorebar .btn.solid{background:var(--paper);color:var(--ink)}
+
+  /* ---- Report ---- */
+  .report{background:#fff;border:1px solid var(--line-strong);border-radius:var(--radius);max-width:850px;margin:0 auto;box-shadow:var(--shadow)}
+  .rpt-head{padding:42px 50px 30px;border-bottom:3px double var(--ink)}
+  .rpt-head .org{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-faint)}
+  .rpt-head h1{font-family:'Fraunces',serif;font-weight:900;font-size:40px;letter-spacing:-.02em;margin:10px 0 4px;line-height:1}
+  .rpt-head .vendor{font-size:19px;font-style:italic;color:var(--ink-soft)}
+  .rpt-verdict{display:flex;align-items:center;gap:24px;margin-top:26px;padding:22px;border-radius:var(--radius)}
+  .rpt-verdict.GREEN{background:var(--green-bg)}.rpt-verdict.YELLOW{background:var(--yellow-bg)}.rpt-verdict.RED{background:var(--red-bg)}
+  .rpt-verdict .big{width:70px;height:70px;border-radius:50%;flex-shrink:0;position:relative}
+  .rpt-verdict.GREEN .big{background:var(--green)}.rpt-verdict.YELLOW .big{background:var(--yellow)}.rpt-verdict.RED .big{background:var(--red)}
+  .rpt-verdict .vtext .vlabel{font-family:'Fraunces',serif;font-weight:900;font-size:30px;line-height:1}
+  .rpt-verdict.GREEN .vlabel{color:var(--green)}.rpt-verdict.YELLOW .vlabel{color:var(--yellow)}.rpt-verdict.RED .vlabel{color:var(--red)}
+  .rpt-verdict .vsum{font-size:16px;color:var(--ink-soft);margin-top:6px;max-width:55ch;line-height:1.45}
+  .rpt-verdict .vscore{margin-left:auto;text-align:right;font-family:'IBM Plex Mono',monospace}
+  .rpt-verdict .vscore b{font-size:38px;font-family:'Fraunces',serif;font-weight:700}
+  .rpt-verdict .vscore span{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-faint);display:block}
+  .rpt-body{padding:34px 50px 46px}
+  .rpt-meta{display:grid;grid-template-columns:repeat(2,1fr);gap:14px 30px;margin-bottom:30px;font-size:15px}
+  .rpt-meta .m label{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-faint);display:block}
+  .rpt-meta .m span{color:var(--ink)}
+  .rpt-section-title{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-faint);border-bottom:1px solid var(--line);padding-bottom:8px;margin:30px 0 16px}
+  .cat-row{display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid var(--line)}
+  .cat-row .cname{flex:1;font-weight:500}
+  .cat-row .cname small{display:block;font-size:13px;color:var(--ink-faint);font-style:italic;font-weight:400}
+  .bar{width:160px;height:9px;background:var(--paper-2);border-radius:100px;overflow:hidden}
+  .bar i{display:block;height:100%;border-radius:100px}
+  .bar i.GREEN{background:var(--green)}.bar i.YELLOW{background:var(--yellow)}.bar i.RED{background:var(--red)}
+  .cat-row .cpct{font-family:'IBM Plex Mono',monospace;font-size:13px;width:42px;text-align:right;color:var(--ink-soft)}
+  .findings li{margin:0 0 11px 20px;font-size:16px;line-height:1.45}
+  .findings li.flag{color:var(--red)}
+  .findings li.warn{color:var(--yellow)}
+  .findings li.ok{color:var(--green)}
+  .reqs-table{width:100%;border-collapse:collapse;margin-top:8px;font-size:15px}
+  .reqs-table td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  .reqs-table td:first-child{width:30px}
+  .reqs-table .st{font-family:'IBM Plex Mono',monospace;font-size:15px}
+  .reqs-table .st.y{color:var(--green)}.reqs-table .st.n{color:var(--red)}.reqs-table .st.p{color:var(--yellow)}
+  .notes-block{font-size:16px;color:var(--ink-soft);line-height:1.5;white-space:pre-wrap;background:var(--paper-2);padding:16px 18px;border-radius:var(--radius);border-left:3px solid var(--line-strong)}
+  .rpt-foot{padding:24px 50px 36px;border-top:1px solid var(--line);font-size:13px;color:var(--ink-faint);line-height:1.5}
+  .report-actions{max-width:850px;margin:0 auto 24px;display:flex;gap:12px;justify-content:flex-end;flex-wrap:wrap}
+
+  /* education view */
+  .edu-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  .edu-card{border:1px solid var(--line-strong);border-radius:var(--radius);padding:24px 26px;background:var(--paper)}
+  .edu-card h3{font-family:'Fraunces',serif;font-weight:700;font-size:23px;margin-bottom:4px;letter-spacing:-.01em}
+  .edu-card .term{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:12px}
+  .edu-card p{font-size:16.5px;color:var(--ink-soft);line-height:1.5;margin-bottom:10px}
+  .edu-card p b{color:var(--ink);font-weight:600}
+  .edu-card .plain{background:var(--green-bg);border-radius:var(--radius);padding:12px 15px;font-size:15.5px;color:var(--ink);line-height:1.45}
+  .edu-card .plain b{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--green);display:block;margin-bottom:4px}
+
+  footer.site{border-top:2px solid var(--ink);padding:30px 0;margin-top:40px}
+  footer.site .wrap{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-faint);letter-spacing:.04em}
+
+  .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(120px);background:var(--ink);color:var(--paper);padding:14px 26px;border-radius:var(--radius);font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:.04em;z-index:200;transition:.35s cubic-bezier(.2,.8,.2,1);box-shadow:var(--shadow)}
+  .toast.show{transform:translateX(-50%) translateY(0)}
+
+  @media(max-width:880px){
+    .assess-layout{grid-template-columns:1fr}
+    .rail{display:none}
+    .home-steps,.legend,.edu-grid,.rpt-meta{grid-template-columns:1fr}
+    .field-row{grid-template-columns:1fr}
+    .topbar-inner{flex-wrap:wrap}
+    .rpt-head,.rpt-body,.rpt-foot{padding-left:26px;padding-right:26px}
+  }
+
+  /* print */
+  @media print{
+    body{background:#fff;background-image:none}
+    .topbar,.nav,.report-actions,.scorebar,footer.site,.toast{display:none!important}
+    .view{display:none!important;padding:0}
+    .view#v-report.show{display:block!important}
+    .report{border:none;box-shadow:none;max-width:100%}
+    .wrap{padding:0}
+    @page{margin:1.4cm}
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="brand" onclick="go('home')">
+      <span class="mark">Sig<span class="dot-r">·</span><span class="dot-y">·</span><span class="dot-g">·</span>nal</span>
+      <span class="tag">AI &amp; Vendor Risk Vetting</span>
+    </div>
+    <nav class="nav">
+      <button data-nav="home" class="active" onclick="go('home')">Home</button>
+      <button data-nav="library" onclick="go('library')">Library</button>
+      <button data-nav="assess" onclick="newAssessment()">New Review</button>
+      <button data-nav="learn" onclick="go('learn')">Plain-Talk</button>
+    </nav>
+  </div>
+</div>
+
+<!-- ============ HOME ============ -->
+<div id="v-home" class="view show">
+  <div class="wrap">
+    <div class="hero">
+      <h1>Give every AI tool a <em>red, yellow,</em> or <em>green</em> light.</h1>
+      <p class="lede">Signal walks you through a structured security &amp; privacy review of any AI tool or third-party service, then produces a clean report you can hand straight to <strong>District Information Security</strong>. The rubric mirrors the <strong>HECVAT 4</strong> framework higher-ed institutions actually use — plus the specific documentation your CISO asks for.</p>
+      <div class="cta-row">
+        <button class="btn" onclick="newAssessment()">▸ Start a new review</button>
+        <button class="btn ghost" onclick="go('learn')">What do these terms mean?</button>
+      </div>
+    </div>
+
+    <div class="legend">
+      <div class="lcard green">
+        <h3><span class="dot"></span>Green — Approve</h3>
+        <p>Strong, documented controls. Independent audit on file, no model-training on your data, least-privilege access. Safe to recommend for approval.</p>
+      </div>
+      <div class="lcard yellow">
+        <h3><span class="dot"></span>Yellow — Conditions</h3>
+        <p>Workable, but with gaps. Approvable <em>if</em> specific conditions are met — a contract clause, a narrower scope, or follow-up documentation.</p>
+      </div>
+      <div class="lcard red">
+        <h3><span class="dot"></span>Red — Hold</h3>
+        <p>A critical control is missing or the tool trains on your data. Needs remediation or a different vendor before it goes anywhere near institutional accounts.</p>
+      </div>
+    </div>
+
+    <h2 class="home-sub">How it works</h2>
+    <div class="home-steps">
+      <div class="step"><div class="num">STEP 01</div><h4>Describe the tool</h4><p>Name, vendor, what it does, and what data it would touch.</p></div>
+      <div class="step"><div class="num">STEP 02</div><h4>Answer in plain language</h4><p>Each question explains itself — no security background needed.</p></div>
+      <div class="step"><div class="num">STEP 03</div><h4>Get a live score</h4><p>The rubric scores as you go and flags any deal-breakers.</p></div>
+      <div class="step"><div class="num">STEP 04</div><h4>Export the report</h4><p>One clean PDF for your CISO. Saved to your library for next time.</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ LIBRARY ============ -->
+<div id="v-library" class="view">
+  <div class="wrap">
+    <div class="section-head">
+      <div>
+        <h2>Review Library</h2>
+        <div class="sub" id="lib-count">Saved assessments, stored in this browser</div>
+      </div>
+      <button class="btn sm" onclick="newAssessment()">+ New review</button>
+    </div>
+    <div id="lib-grid" class="lib-grid"></div>
+  </div>
+</div>
+
+<!-- ============ ASSESSMENT ============ -->
+<div id="v-assess" class="view">
+  <div class="wrap">
+    <div class="section-head">
+      <div>
+        <h2 id="assess-title">New Review</h2>
+        <div class="sub">Scored against HECVAT 4 categories · saves automatically as you go</div>
+      </div>
+      <button class="btn sm ghost" onclick="go('library')">‹ Library</button>
+    </div>
+    <div class="assess-layout">
+      <aside class="rail"><ol id="rail-list"></ol></aside>
+      <main id="form-host"></main>
+    </div>
+  </div>
+</div>
+
+<!-- ============ REPORT ============ -->
+<div id="v-report" class="view">
+  <div class="wrap">
+    <div class="report-actions">
+      <button class="btn sm ghost" onclick="editCurrent()">‹ Edit answers</button>
+      <button class="btn sm ghost" onclick="exportJSON()">⤓ Export data</button>
+      <button class="btn sm" onclick="window.print()">⎙ Print / Save PDF</button>
+    </div>
+    <div class="report" id="report-host"></div>
+  </div>
+</div>
+
+<!-- ============ LEARN ============ -->
+<div id="v-learn" class="view">
+  <div class="wrap">
+    <div class="section-head">
+      <div>
+        <h2>Plain-Talk Glossary</h2>
+        <div class="sub">The IT terms your CISO uses — translated</div>
+      </div>
+    </div>
+    <div class="edu-grid" id="edu-grid"></div>
+  </div>
+</div>
+
+<footer class="site">
+  <div class="wrap">
+    <span>SIGNAL · built for North Orange County CCD vetting workflows</span>
+    <span>Rubric basis: EDUCAUSE HECVAT 4 · runs entirely in your browser</span>
+  </div>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* =====================================================================
+   SIGNAL — data model
+   Rubric maps to HECVAT 4's assessment domains, weighted, with a few
+   "critical" questions that can cap the rating (mirrors HECVAT's
+   asterisked critical questions + High-Risk Evaluation tab).
+   ===================================================================== */
+
+const RUBRIC = [
+  {
+    id:"profile", kicker:"Section 00", title:"The tool & its data",
+    intro:"Start with the basics. What is this thing, who makes it, and — most importantly — what institutional data would it be able to see? The data sensitivity here sets the bar for everything below.",
+    profile:true
+  },
+  {
+    id:"company", kicker:"Section 01", title:"Company & governance",
+    intro:"Is there a real, accountable company behind this, with someone responsible for security? HECVAT calls this the universal baseline every vendor must clear.",
+    weight:1,
+    questions:[
+      {id:"co_audit", text:"Does the vendor have a current independent security audit (SOC 2 Type II, ISO 27001, or equivalent)?",
+        explain:"<b>SOC 2 Type II</b> is the gold standard: an outside auditor watches the vendor's controls over 6–12 months and writes a report. It's the single most important document your CISO asked Superhuman for. A 'Type II' is far stronger than a 'Type I' (a one-day snapshot).",
+        critical:true,
+        opts:[{v:1,l:"Yes — SOC 2 Type II / ISO 27001",t:"good"},{v:.5,l:"Only Type I or self-attested",t:"mid"},{v:0,l:"No / can't find one",t:"bad"}]},
+      {id:"co_trust", text:"Is there a public Trust Center or security page with documentation?",
+        explain:"A <b>Trust Center</b> is a vendor's public shelf of security paperwork (audits, whitepapers, pen-test summaries). Superhuman pointed you to theirs — that's a good sign of maturity. No trust center isn't disqualifying, but it means more chasing.",
+        opts:[{v:1,l:"Yes, with real documents",t:"good"},{v:.5,l:"Page exists, thin on docs",t:"mid"},{v:0,l:"None",t:"bad"}]},
+      {id:"co_pentest", text:"Has the vendor had a recent third-party penetration test?",
+        explain:"A <b>penetration test</b> (\"pen test\") is hiring ethical hackers to attack the product on purpose and report what they could break. Recent = within ~12 months. Shows the vendor actively hunts its own weaknesses.",
+        opts:[{v:1,l:"Yes, within 12 months",t:"good"},{v:.5,l:"Older / summary only",t:"mid"},{v:0,l:"No / unknown",t:"bad"}]}
+    ]
+  },
+  {
+    id:"data", kicker:"Section 02", title:"Data protection & encryption",
+    intro:"Once the vendor holds your data, how is it locked down — in transit, at rest, and against the vendor's own staff? This maps to Andy's request for encryption and access-control details.",
+    weight:1.2,
+    questions:[
+      {id:"d_transit", text:"Is data encrypted in transit (TLS) and at rest?",
+        explain:"<b>Encryption in transit</b> scrambles data as it travels over the internet (the padlock in your browser). <b>At rest</b> means it's also scrambled while sitting on the vendor's servers. Both should be standard; missing either is a red flag.",
+        critical:true,
+        opts:[{v:1,l:"Both, modern standards",t:"good"},{v:.5,l:"In transit only",t:"mid"},{v:0,l:"Neither / unclear",t:"bad"}]},
+      {id:"d_access", text:"Does the vendor enforce least-privilege access and MFA for its own staff?",
+        explain:"<b>Least privilege</b> means employees can only touch the data they truly need. <b>MFA</b> (multi-factor authentication) is the second step — a code or tap — beyond a password. Together they limit damage if an employee account is compromised.",
+        opts:[{v:1,l:"Yes, documented",t:"good"},{v:.5,l:"Partial / informal",t:"mid"},{v:0,l:"No / unknown",t:"bad"}]},
+      {id:"d_residency", text:"Is data stored with a reputable cloud provider in a known region?",
+        explain:"<b>Data residency</b> = which country your data physically lives in. Established providers (AWS, Google Cloud, Azure) in the US/EU are well-understood. Unknown hosting or undisclosed regions raise legal and privacy questions.",
+        opts:[{v:1,l:"Yes, major provider",t:"good"},{v:.5,l:"Unclear region",t:"mid"},{v:0,l:"No / undisclosed",t:"bad"}]}
+    ]
+  },
+  {
+    id:"ai", kicker:"Section 03", title:"AI / ML practices",
+    intro:"This is HECVAT 4's headline addition and the heart of your project. The single most important question: does the tool train its AI on your data? For an email client that reads institutional mail, the answer must be no.",
+    weight:1.4,
+    questions:[
+      {id:"ai_training", text:"Does the vendor confirm in writing that your data is NOT used to train its (or anyone's) AI models?",
+        explain:"This is the line in the sand. If a tool <b>trains on your data</b>, your institution's emails could influence the model and potentially surface elsewhere. Andy asked Superhuman for written confirmation that customer data is not used for model training — this question captures exactly that.",
+        critical:true,
+        opts:[{v:1,l:"Yes — in writing",t:"good"},{v:.5,l:"Implied, not explicit",t:"mid"},{v:0,l:"No / trains on data",t:"bad"}]},
+      {id:"ai_subproc", text:"Are the AI sub-processors disclosed (e.g. which LLM provider powers the features)?",
+        explain:"Most AI tools don't build their own model — they send your text to OpenAI, Anthropic, Google, etc. Those are <b>sub-processors</b>. You need to know who they are, because your data passes through them too. Reputable vendors list them publicly.",
+        opts:[{v:1,l:"Yes, clearly listed",t:"good"},{v:.5,l:"Vaguely / on request",t:"mid"},{v:0,l:"Not disclosed",t:"bad"}]},
+      {id:"ai_optout", text:"Do the AI sub-processors offer a zero-retention / no-training mode, and does the vendor use it?",
+        explain:"The big LLM providers offer business modes where prompts aren't stored or trained on (\"zero data retention\"). The question is whether the vendor actually turns this on. This is often where a tool moves from yellow to green.",
+        opts:[{v:1,l:"Yes, confirmed",t:"good"},{v:.5,l:"Available, unconfirmed",t:"mid"},{v:0,l:"No / unknown",t:"bad"}]}
+    ]
+  },
+  {
+    id:"privacy", kicker:"Section 04", title:"Privacy & data lifecycle",
+    intro:"Beyond AI: what's the vendor's overall posture on your data over its whole life — from collection to deletion? Maps to Andy's ask for data retention and deletion policies.",
+    weight:1.1,
+    questions:[
+      {id:"p_retention", text:"Is there a clear data retention and deletion policy?",
+        explain:"<b>Retention</b> = how long they keep your data. <b>Deletion</b> = what happens when you leave (and whether you can demand erasure). Vague or 'indefinite' retention is a privacy risk, especially for email content.",
+        opts:[{v:1,l:"Clear, reasonable",t:"good"},{v:.5,l:"Exists but vague",t:"mid"},{v:0,l:"None / indefinite",t:"bad"}]},
+      {id:"p_dpa", text:"Will the vendor sign a Data Processing Agreement (DPA)?",
+        explain:"A <b>DPA</b> is the contract that legally binds the vendor to handle your data properly. It's how 'they told me it's fine' becomes 'they're contractually obligated.' Institutions almost always require one.",
+        opts:[{v:1,l:"Yes, standard DPA",t:"good"},{v:.5,l:"Negotiable / unclear",t:"mid"},{v:0,l:"No",t:"bad"}]},
+      {id:"p_flow", text:"Can the vendor provide a data flow diagram (what data goes where)?",
+        explain:"A <b>data flow diagram</b> is a simple map: your data starts here, travels to there, this party can see it. Andy asked for one. It lets a reviewer confirm the data boundaries at a glance.",
+        opts:[{v:1,l:"Yes, available",t:"good"},{v:.5,l:"Can describe, no diagram",t:"mid"},{v:0,l:"No",t:"bad"}]}
+    ]
+  },
+  {
+    id:"access", kicker:"Section 05", title:"Integration & access scope",
+    intro:"How deeply does this tool plug into your institutional systems, and how much permission does it demand? A tool that asks for broad access to your whole Microsoft 365 tenant is riskier than one scoped to a single mailbox.",
+    weight:1.2,
+    questions:[
+      {id:"a_scope", text:"What is the connection scope to institutional systems?",
+        explain:"This is exactly the fork in Andy's first reply. Connecting to <b>just your own mailbox</b> is low-risk. Connecting to the whole <b>Office 365 tenant</b> (everyone's mail) is a major escalation that triggers a full review. Narrower is always safer.",
+        critical:true,
+        opts:[{v:1,l:"Single user / no integration",t:"good"},{v:.5,l:"Departmental scope",t:"mid"},{v:0,l:"Org-wide tenant access",t:"bad"}]},
+      {id:"a_oauth", text:"Are the OAuth permissions it requests appropriate (least privilege)?",
+        explain:"<b>OAuth</b> is the 'Sign in with Microsoft / allow access?' screen. The permissions it lists are exactly what the tool can do to your account. 'Read your mail' is reasonable; 'read and send mail as you, read all files, read the directory' is a lot. Andy asked for the OAuth permission list.",
+        opts:[{v:1,l:"Minimal, read-focused",t:"good"},{v:.5,l:"Broad but explainable",t:"mid"},{v:0,l:"Excessive / unclear",t:"bad"}]},
+      {id:"a_sis", text:"Does it stay clear of student information systems (Banner, Canvas, SIS)?",
+        explain:"Anything touching <b>student records</b> pulls in FERPA (the federal student-privacy law) and raises the stakes dramatically. A tool that never touches the SIS is much simpler to approve. You noted Superhuman doesn't connect to these — good.",
+        opts:[{v:1,l:"Yes, never touches SIS",t:"good"},{v:.5,l:"Indirect / possible",t:"mid"},{v:0,l:"Connects to SIS",t:"bad"}]}
+    ]
+  },
+  {
+    id:"ops", kicker:"Section 06", title:"Operations & resilience",
+    intro:"If something goes wrong — an outage, a breach — does the vendor have its act together? Lower-weight, but a tool you'll depend on daily should be dependable.",
+    weight:.8,
+    questions:[
+      {id:"o_breach", text:"Is there a documented incident-response / breach-notification process?",
+        explain:"<b>Breach notification</b> = the vendor's promise to tell you, quickly, if your data is exposed, and what they'll do about it. Silence-until-the-news-breaks is the nightmare scenario; a documented process is the antidote.",
+        opts:[{v:1,l:"Yes, with timelines",t:"good"},{v:.5,l:"Mentioned, no detail",t:"mid"},{v:0,l:"None",t:"bad"}]},
+      {id:"o_bcp", text:"Are there business-continuity / uptime commitments (SLA)?",
+        explain:"An <b>SLA</b> (service-level agreement) is the vendor's uptime promise — e.g. 99.9%. <b>Business continuity</b> is their plan to keep running through a disaster. Matters more for tools people rely on every day.",
+        opts:[{v:1,l:"Yes, published SLA",t:"good"},{v:.5,l:"Informal",t:"mid"},{v:0,l:"None",t:"bad"}]}
+    ]
+  }
+];
+
+const GLOSSARY = [
+  {term:"SOC 2 Type II", title:"The big audit report",
+   body:"An independent auditing firm observes a vendor's security controls over 6–12 months and certifies they actually work. <b>Type II</b> = watched over time. <b>Type I</b> = a single-day snapshot (weaker).",
+   plain:"Think of it as a health inspection that lasted a year, not one afternoon. It's the #1 document a CISO wants."},
+  {term:"HECVAT 4", title:"The higher-ed rubric",
+   body:"The <b>Higher Education Community Vendor Assessment Toolkit</b>, maintained by EDUCAUSE. Version 4 (2025) added a dedicated <b>AI/ML section</b> and a privacy section. It's the standard hundreds of colleges use to vet vendors — and what Andy's building his program around.",
+   plain:"It's the shared checklist colleges agreed to use so every vendor gets graded the same way."},
+  {term:"Encryption (in transit / at rest)", title:"Scrambling your data",
+   body:"<b>In transit</b>: data is scrambled while moving across the internet (the browser padlock / TLS). <b>At rest</b>: it stays scrambled while stored on the vendor's servers.",
+   plain:"Locked in the armored truck on the way there, and locked in the vault once it arrives. You want both."},
+  {term:"Model training", title:"Does the AI learn from you?",
+   body:"When an AI <b>trains</b> on data, that data shapes the model and can influence future answers for other users. The key question for any AI tool is whether <b>your</b> data is used for training.",
+   plain:"You don't want your institution's private emails becoming part of the AI's permanent memory. 'No training on our data, in writing' is the goal."},
+  {term:"Sub-processor", title:"The vendor's vendors",
+   body:"A third party the vendor hands your data to in order to do its job — most commonly the LLM provider (OpenAI, Anthropic, Google) behind the AI features, plus cloud hosting.",
+   plain:"If you hire a caterer who hires a baker, the baker is a sub-processor. You still want to know who's touching the food."},
+  {term:"OAuth & permission scope", title:"The 'Allow access?' screen",
+   body:"<b>OAuth</b> is the secure sign-in that lets one app act in another (e.g. 'Sign in with Microsoft'). The <b>scopes</b> are the specific permissions granted — read mail, send mail, read files, etc.",
+   plain:"It's the list of keys you're handing over. 'Read my inbox' is one key. 'Do anything in the whole district account' is the master key — be careful."},
+  {term:"DPA — Data Processing Agreement", title:"The data contract",
+   body:"A legal agreement defining how the vendor may handle institutional data, their obligations, and your rights. Often required before any institutional data is shared.",
+   plain:"It turns a friendly 'don't worry, we're careful' into a signed, enforceable promise."},
+  {term:"Data flow diagram", title:"The map of your data",
+   body:"A simple visual showing what data is collected, where it travels, and who can access it along the way.",
+   plain:"A treasure map for your data — so the reviewer can see exactly where the X's are. Andy asked for this one specifically."},
+  {term:"Penetration test", title:"Hire hackers on purpose",
+   body:"An authorized simulated attack where security pros try to break into the product and report the weaknesses they find. 'Recent' means within ~12 months.",
+   plain:"Paying someone to try to pick your locks before a burglar does."},
+  {term:"FERPA", title:"Student-record privacy law",
+   body:"The federal law protecting the privacy of student education records. Any tool touching student data inherits FERPA obligations, which raises the review bar substantially.",
+   plain:"The reason 'does it touch the student system?' is such an important question. If yes, everything gets more serious."},
+  {term:"Least privilege", title:"Only the keys you need",
+   body:"A security principle: every person or app should have the minimum access required to do its job — nothing extra.",
+   plain:"The intern doesn't get the keys to the vault. Applies to the vendor's staff and to the app's permissions."},
+  {term:"Red / Yellow / Green", title:"What the verdict means",
+   body:"<b>Green</b> = controls are strong, recommend approval. <b>Yellow</b> = approvable with specific conditions (a clause, a narrower scope, a follow-up doc). <b>Red</b> = a critical control is missing; hold until remediated.",
+   plain:"Green = go. Yellow = go, but fix these first. Red = stop and have a conversation."}
+];
+
+/* ---------- state & storage ---------- */
+const LS_KEY = "signal_assessments_v1";
+let store = load();
+let current = null;   // active assessment object
+
+function load(){ try{ return JSON.parse(localStorage.getItem(LS_KEY)) || []; }catch(e){ return []; } }
+function persist(){ localStorage.setItem(LS_KEY, JSON.stringify(store)); }
+function uid(){ return 'a'+Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
+
+/* ---------- navigation ---------- */
+function go(view){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('show'));
+  document.getElementById('v-'+view).classList.add('show');
+  document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active', b.dataset.nav===view));
+  window.scrollTo({top:0,behavior:'instant'});
+  if(view==='library') renderLibrary();
+  if(view==='learn') renderLearn();
+}
+
+/* ---------- create / edit ---------- */
+function blank(){
+  const a = { id:uid(), name:"", vendor:"", url:"", purpose:"", dataTypes:"", requester:"", created:Date.now(), answers:{}, notes:{} };
+  return a;
+}
+function newAssessment(){ current = blank(); buildForm(); go('assess'); document.getElementById('assess-title').textContent="New Review"; }
+function editCurrent(){ if(current){ buildForm(); go('assess'); } }
+function openAssessment(id){ current = JSON.parse(JSON.stringify(store.find(a=>a.id===id))); buildForm(); go('assess'); document.getElementById('assess-title').textContent = current.name || "Review"; }
+
+/* ---------- build the form ---------- */
+function buildForm(){
+  const host = document.getElementById('form-host');
+  host.innerHTML = "";
+  const rail = document.getElementById('rail-list'); rail.innerHTML="";
+
+  RUBRIC.forEach(sec=>{
+    // rail entry
+    const li = document.createElement('li');
+    li.textContent = sec.title; li.dataset.sec = sec.id;
+    li.onclick = ()=>document.getElementById('sec-'+sec.id).scrollIntoView({behavior:'smooth',block:'start'});
+    rail.appendChild(li);
+
+    const card = document.createElement('section');
+    card.className="fcard"; card.id="sec-"+sec.id;
+    let inner = `<div class="fhead"><div class="kicker">${sec.kicker}</div><h3>${sec.title}</h3><p>${sec.intro}</p></div><div class="fbody">`;
+
+    if(sec.profile){
+      inner += `
+        <div class="field"><label>Tool / system name</label><input type="text" id="f_name" value="${esc(current.name)}" placeholder="e.g. Superhuman"></div>
+        <div class="field-row">
+          <div class="field"><label>Vendor / company</label><input type="text" id="f_vendor" value="${esc(current.vendor)}" placeholder="e.g. Superhuman Labs Inc."></div>
+          <div class="field"><label>Website / trust center URL</label><input type="url" id="f_url" value="${esc(current.url)}" placeholder="https://..."></div>
+        </div>
+        <div class="field"><label>What does it do? (purpose / workflow)</label><textarea id="f_purpose" placeholder="e.g. AI email client layered on Microsoft 365 — drafting, triage, inbox management.">${esc(current.purpose)}</textarea></div>
+        <div class="field"><label>What institutional data would it touch? <span style="text-transform:none;font-style:italic">(this sets the risk bar)</span></label><textarea id="f_data" placeholder="e.g. Faculty email content from one mailbox. No student records, no SIS.">${esc(current.dataTypes)}</textarea></div>
+        <div class="field"><label>Requested by</label><input type="text" id="f_req" value="${esc(current.requester)}" placeholder="Your name / department"></div>
+      `;
+    } else {
+      sec.questions.forEach(q=>{
+        const cur = current.answers[q.id];
+        inner += `<div class="q">
+          <div class="qtop">
+            <label class="qtext">${q.text}</label>
+            <span class="wt ${q.critical?'crit':''}">${q.critical?'★ Critical':'Weighted'}</span>
+          </div>
+          <div class="explain">${q.explain}</div>
+          <div class="opts">`;
+        q.opts.forEach((o,i)=>{
+          const oid = q.id+"_"+i;
+          inner += `<div class="opt ${o.t}">
+            <input type="radio" name="${q.id}" id="${oid}" value="${o.v}" ${cur!=null && Number(cur)===o.v?'checked':''} onchange="answer('${q.id}',${o.v})">
+            <label for="${oid}">${o.l}</label></div>`;
+        });
+        inner += `</div>
+          <div class="note"><span class="nl">Reviewer note (optional — appears in report)</span>
+          <textarea onchange="note('${q.id}',this.value)" placeholder="e.g. Confirmed in Superhuman trust center, May 2026.">${esc(current.notes[q.id]||"")}</textarea></div>
+        </div>`;
+      });
+    }
+    inner += `</div>`;
+    card.innerHTML = inner;
+    host.appendChild(card);
+  });
+
+  // profile listeners
+  ['name|f_name','vendor|f_vendor','url|f_url','purpose|f_purpose','dataTypes|f_data','requester|f_req'].forEach(p=>{
+    const [k,id]=p.split('|'); const el=document.getElementById(id);
+    if(el) el.addEventListener('input',()=>{ current[k]=el.value; saveCurrent(true); updateScore(); });
+  });
+
+  // score bar
+  if(!document.getElementById('scorebar-host')){
+    const sb=document.createElement('div'); sb.id="scorebar-host"; host.appendChild(sb);
+  }
+  renderScorebar();
+  updateScore();
+  observeSections();
+}
+
+function answer(qid,v){ current.answers[qid]=v; saveCurrent(true); updateScore(); }
+function note(qid,v){ current.notes[qid]=v; saveCurrent(true); }
+
+function saveCurrent(silent){
+  const idx = store.findIndex(a=>a.id===current.id);
+  const snap = JSON.parse(JSON.stringify(current));
+  if(idx>=0) store[idx]=snap; else store.unshift(snap);
+  persist();
+  if(!silent) toast("Saved to library");
+}
+
+/* ---------- scoring engine ---------- */
+function scoreOf(a){
+  let totalW=0, gotW=0;
+  const cats=[]; let criticalFail=false, criticalWarn=false;
+  RUBRIC.forEach(sec=>{
+    if(sec.profile) return;
+    let cw=0, cg=0, answered=0;
+    sec.questions.forEach(q=>{
+      const v = a.answers[q.id];
+      if(v==null) return;
+      answered++;
+      cw+=1; cg+=Number(v);
+      if(q.critical){ if(Number(v)===0) criticalFail=true; else if(Number(v)===0.5) criticalWarn=true; }
+    });
+    const pct = cw? Math.round((cg/cw)*100):null;
+    cats.push({id:sec.id,title:sec.title,pct,answered,total:sec.questions.length,weight:sec.weight});
+    if(cw){ totalW+=sec.weight; gotW+= sec.weight*(cg/cw); }
+  });
+  const overall = totalW? Math.round((gotW/totalW)*100):0;
+  // verdict logic — mirrors HECVAT critical-question capping
+  let verdict;
+  if(criticalFail) verdict="RED";
+  else if(overall>=80 && !criticalWarn) verdict="GREEN";
+  else if(overall>=55) verdict="YELLOW";
+  else verdict="RED";
+  // a critical warn caps at YELLOW even with high score
+  if(verdict==="GREEN" && criticalWarn) verdict="YELLOW";
+  return {overall,cats,verdict,criticalFail,criticalWarn};
+}
+
+function totalAnswered(a){
+  let n=0; RUBRIC.forEach(s=>{ if(s.profile)return; s.questions.forEach(q=>{ if(a.answers[q.id]!=null)n++; }); }); return n;
+}
+function totalQuestions(){ let n=0; RUBRIC.forEach(s=>{ if(!s.profile) n+=s.questions.length; }); return n; }
+
+/* ---------- score bar ---------- */
+function renderScorebar(){
+  const host=document.getElementById('scorebar-host');
+  host.className="scorebar";
+  host.innerHTML = `
+    <div class="live">
+      <div class="ring">
+        <svg width="54" height="54"><circle cx="27" cy="27" r="22" stroke="rgba(244,241,234,.18)" stroke-width="5" fill="none"></circle>
+        <circle id="ring-fg" cx="27" cy="27" r="22" stroke="#8fd49a" stroke-width="5" fill="none" stroke-linecap="round" stroke-dasharray="138" stroke-dashoffset="138"></circle></svg>
+        <div class="pct" id="ring-pct">0</div>
+      </div>
+      <div class="verdict" id="sb-verdict">Provisional verdict<b>—</b></div>
+      <div class="verdict" id="sb-prog" style="opacity:.55">Answered<b id="sb-count" style="font-family:'IBM Plex Mono',monospace;font-size:15px">0 / ${totalQuestions()}</b></div>
+    </div>
+    <div class="acts">
+      <button class="btn ghost sm" onclick="saveCurrent(false)">Save draft</button>
+      <button class="btn solid sm" onclick="finalize()">Generate report ▸</button>
+    </div>`;
+}
+function updateScore(){
+  const s=scoreOf(current);
+  const off = 138 - (138*s.overall/100);
+  const fg=document.getElementById('ring-fg');
+  const color = s.verdict==="GREEN"?"#8fd49a":s.verdict==="YELLOW"?"#f0cf76":"#f0978d";
+  if(fg){ fg.style.strokeDashoffset=off; fg.style.stroke=color; }
+  const pe=document.getElementById('ring-pct'); if(pe) pe.textContent=s.overall;
+  const v=document.getElementById('sb-verdict');
+  if(v){ v.className="verdict v"+s.verdict[0]; v.innerHTML=`Provisional verdict<b>${s.verdict}</b>`; }
+  const c=document.getElementById('sb-count'); if(c) c.textContent=`${totalAnswered(current)} / ${totalQuestions()}`;
+  // rail done states
+  document.querySelectorAll('#rail-list li').forEach(li=>{
+    const sec=RUBRIC.find(x=>x.id===li.dataset.sec);
+    if(sec && !sec.profile){
+      const all=sec.questions.every(q=>current.answers[q.id]!=null);
+      li.classList.toggle('done',all);
+    }
+  });
+}
+
+function observeSections(){
+  const lis=[...document.querySelectorAll('#rail-list li')];
+  const io=new IntersectionObserver(es=>{
+    es.forEach(e=>{ if(e.isIntersecting){
+      lis.forEach(l=>l.classList.remove('active'));
+      const m=lis.find(l=>l.dataset.sec===e.target.id.replace('sec-',''));
+      if(m) m.classList.add('active');
+    }});
+  },{rootMargin:"-40% 0px -55% 0px"});
+  RUBRIC.forEach(s=>{ const el=document.getElementById('sec-'+s.id); if(el) io.observe(el); });
+}
+
+/* ---------- finalize -> report ---------- */
+function finalize(){
+  if(!current.name){ toast("Add a tool name first"); document.getElementById('f_name')?.focus(); return; }
+  if(totalAnswered(current) < totalQuestions()){
+    if(!confirm("Some questions are unanswered. Generate the report anyway? Unanswered items count as gaps.")) return;
+  }
+  current.finalized=Date.now();
+  saveCurrent(true);
+  renderReport(current);
+  go('report');
+}
+
+/* ---------- report ---------- */
+function verdictSummary(s,a){
+  if(s.verdict==="GREEN") return `Controls are strong across the board. Recommend approval for the described use (${esc(a.dataTypes||'stated data scope')}). Standard contract terms and annual re-review apply.`;
+  if(s.verdict==="YELLOW") return `Generally sound, but approval should be conditional. Address the flagged items below — typically via a contract clause, a narrower access scope, or follow-up documentation — before granting institutional access.`;
+  return `One or more critical controls are missing or unacceptable. Do not approve for institutional use until the red-flagged items are remediated, or consider an alternative tool.`;
+}
+
+function renderReport(a){
+  const s=scoreOf(a);
+  const host=document.getElementById('report-host');
+  const dt=new Date(a.finalized||Date.now()).toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+
+  // findings
+  const flags=[],warns=[],oks=[];
+  RUBRIC.forEach(sec=>{ if(sec.profile)return; sec.questions.forEach(q=>{
+    const v=a.answers[q.id]; if(v==null){ flags.push(`<b>Unanswered:</b> ${q.text} — treat as an open gap.`); return; }
+    const chosen=q.opts.find(o=>o.v===Number(v));
+    const lbl=chosen?chosen.l:'';
+    if(Number(v)===0) flags.push(`${q.text} <em>— ${lbl}.</em>${q.critical?' <b>(Critical)</b>':''}`);
+    else if(Number(v)===0.5) warns.push(`${q.text} <em>— ${lbl}.</em>`);
+    else oks.push(`${q.text}`);
+  });});
+
+  // requirements checklist (Andy's 8 items mapped to answers)
+  const reqMap=[
+    ["SOC 2 Type II report","co_audit"],
+    ["Data flow diagram","p_flow"],
+    ["AI data-handling / no-training confirmation","ai_training"],
+    ["List of sub-processors","ai_subproc"],
+    ["Encryption & access-control details","d_transit"],
+    ["Data retention & deletion policy","p_retention"],
+    ["OAuth permissions for Microsoft 365","a_oauth"],
+    ["Customer data not used for model training","ai_training"]
+  ];
+  const reqRows = reqMap.map(([label,qid])=>{
+    const v=a.answers[qid];
+    let st='p',mark='◐',word='Partial / unclear';
+    if(v==null){st='n';mark='○';word='Not yet documented';}
+    else if(Number(v)===1){st='y';mark='●';word='Provided / confirmed';}
+    else if(Number(v)===0){st='n';mark='○';word='Missing';}
+    return `<tr><td class="st ${st}">${mark}</td><td>${label}</td><td style="color:var(--ink-faint)">${word}</td></tr>`;
+  }).join('');
+
+  let cats = s.cats.map(c=>{
+    const cv = c.pct==null?'RED':(c.pct>=80?'GREEN':c.pct>=55?'YELLOW':'RED');
+    const w = c.pct==null?0:c.pct;
+    return `<div class="cat-row">
+      <div class="cname">${c.title}<small>${c.answered}/${c.total} answered · weight ×${c.weight}</small></div>
+      <div class="bar"><i class="${cv}" style="width:${w}%"></i></div>
+      <div class="cpct">${c.pct==null?'—':c.pct}</div>
+    </div>`;
+  }).join('');
+
+  // reviewer notes
+  let notesHtml='';
+  RUBRIC.forEach(sec=>{ if(sec.profile)return; sec.questions.forEach(q=>{
+    if(a.notes[q.id] && a.notes[q.id].trim()) notesHtml+=`<b>${q.text}</b>\n${a.notes[q.id].trim()}\n\n`;
+  });});
+
+  host.innerHTML = `
+  <div class="rpt-head">
+    <div class="org">North Orange County Community College District · Third-Party AI &amp; Vendor Risk Assessment</div>
+    <h1>${esc(a.name)||'Untitled tool'}</h1>
+    <div class="vendor">${esc(a.vendor)||'Vendor not specified'}${a.url?' · '+esc(a.url):''}</div>
+    <div class="rpt-verdict ${s.verdict}">
+      <div class="big"></div>
+      <div class="vtext">
+        <div class="vlabel">${s.verdict==='GREEN'?'GREEN — Recommend Approval':s.verdict==='YELLOW'?'YELLOW — Approve with Conditions':'RED — Hold for Remediation'}</div>
+        <div class="vsum">${verdictSummary(s,a)}</div>
+      </div>
+      <div class="vscore"><b>${s.overall}</b><span>Weighted score</span></div>
+    </div>
+  </div>
+  <div class="rpt-body">
+    <div class="rpt-meta">
+      <div class="m"><label>Purpose</label><span>${esc(a.purpose)||'—'}</span></div>
+      <div class="m"><label>Data in scope</label><span>${esc(a.dataTypes)||'—'}</span></div>
+      <div class="m"><label>Requested by</label><span>${esc(a.requester)||'—'}</span></div>
+      <div class="m"><label>Assessment date</label><span>${dt}</span></div>
+    </div>
+
+    <div class="rpt-section-title">Category scores (HECVAT 4 domains)</div>
+    ${cats}
+
+    <div class="rpt-section-title">CISO documentation checklist</div>
+    <table class="reqs-table">${reqRows}</table>
+
+    ${flags.length?`<div class="rpt-section-title">⚑ Red flags &amp; gaps to resolve</div><ul class="findings">${flags.map(f=>`<li class="flag">${f}</li>`).join('')}</ul>`:''}
+    ${warns.length?`<div class="rpt-section-title">△ Conditions &amp; items to confirm</div><ul class="findings">${warns.map(f=>`<li class="warn">${f}</li>`).join('')}</ul>`:''}
+    ${oks.length?`<div class="rpt-section-title">✓ Controls in good standing</div><ul class="findings">${oks.map(f=>`<li class="ok">${f}</li>`).join('')}</ul>`:''}
+
+    ${notesHtml?`<div class="rpt-section-title">Reviewer notes</div><div class="notes-block">${esc(notesHtml.trim())}</div>`:''}
+  </div>
+  <div class="rpt-foot">
+    Generated by Signal · a self-service pre-screen aligned to the EDUCAUSE HECVAT 4 framework. This report supports, but does not replace, formal review by the District Information Security Office. Verdict logic: a missing critical control (★) caps the rating at RED; an unconfirmed critical control caps it at YELLOW. Weighted score is the importance-weighted average across answered categories.
+  </div>`;
+}
+
+/* ---------- library ---------- */
+function renderLibrary(){
+  const grid=document.getElementById('lib-grid');
+  document.getElementById('lib-count').textContent = `${store.length} saved assessment${store.length!==1?'s':''} · stored in this browser`;
+  if(!store.length){
+    grid.innerHTML=`<div class="empty" style="grid-column:1/-1"><h3>No reviews yet</h3><p>Start your first assessment and it'll be saved here automatically.</p><br><button class="btn" onclick="newAssessment()">▸ New review</button></div>`;
+    return;
+  }
+  grid.innerHTML = store.map(a=>{
+    const s=scoreOf(a);
+    const dt=new Date(a.finalized||a.created).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    return `<article class="tool-card">
+      <div class="band ${s.verdict}"></div>
+      <div class="body" onclick="openCardOrReport('${a.id}')" style="cursor:pointer">
+        <h3>${esc(a.name)||'Untitled tool'}</h3>
+        <div class="vendor">${esc(a.vendor)||'Vendor not specified'}</div>
+        <span class="pill ${s.verdict}"><span class="d"></span>${s.verdict}</span>
+        <div class="meta">
+          <div class="score"><b>${s.overall}</b> / 100 · ${totalAnswered(a)}/${totalQuestions()} answered</div>
+          <div class="date">${a.finalized?'Final':'Draft'} · ${dt}</div>
+        </div>
+      </div>
+      <div class="acts">
+        <button onclick="openCardOrReport('${a.id}')">${a.finalized?'View report':'Edit'}</button>
+        <button onclick="editReview('${a.id}')">Edit answers</button>
+        <button onclick="duplicateReview('${a.id}')">Duplicate</button>
+        <button class="del" onclick="deleteReview('${a.id}')">Delete</button>
+      </div>
+    </article>`;
+  }).join('');
+}
+function openCardOrReport(id){
+  const a=store.find(x=>x.id===id);
+  current=JSON.parse(JSON.stringify(a));
+  if(a.finalized){ renderReport(current); go('report'); }
+  else { buildForm(); go('assess'); document.getElementById('assess-title').textContent=current.name||'Review'; }
+}
+function editReview(id){
+  const a=store.find(x=>x.id===id);
+  current=JSON.parse(JSON.stringify(a));
+  buildForm(); go('assess');
+  document.getElementById('assess-title').textContent=current.name||'Review';
+}
+function duplicateReview(id){
+  const a=store.find(x=>x.id===id);
+  const copy=JSON.parse(JSON.stringify(a));
+  copy.id=uid();
+  copy.name=(a.name||'Untitled tool')+' (copy)';
+  copy.created=Date.now();
+  delete copy.finalized;
+  store.unshift(copy);
+  persist();
+  renderLibrary();
+  toast("Duplicated — edit the copy freely");
+}
+function deleteReview(id){
+  const a=store.find(x=>x.id===id);
+  if(!confirm(`Delete the review for "${a.name||'Untitled tool'}"? This can't be undone.`)) return;
+  store=store.filter(x=>x.id!==id);
+  persist();
+  renderLibrary();
+  toast("Review deleted");
+}
+
+/* ---------- learn ---------- */
+function renderLearn(){
+  document.getElementById('edu-grid').innerHTML = GLOSSARY.map(g=>`
+    <div class="edu-card">
+      <div class="term">${g.term}</div>
+      <h3>${g.title}</h3>
+      <p>${g.body}</p>
+      <div class="plain"><b>In plain terms</b>${g.plain}</div>
+    </div>`).join('');
+}
+
+/* ---------- export ---------- */
+function exportJSON(){
+  const blob=new Blob([JSON.stringify(current,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob); const a=document.createElement('a');
+  a.href=url; a.download=(current.name||'assessment').replace(/\s+/g,'_')+'_signal.json'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+/* ---------- util ---------- */
+function esc(s){ return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+let toastT;
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),1800); }
+
+/* ---------- boot ---------- */
+go('home');
+</script>
+</body>
+</html>
