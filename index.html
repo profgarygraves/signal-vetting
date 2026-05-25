@@ -296,10 +296,26 @@
   .bar i{display:block;height:100%;border-radius:100px}
   .bar i.GREEN{background:var(--green)}.bar i.YELLOW{background:var(--yellow)}.bar i.RED{background:var(--red)}
   .cat-row .cpct{font-family:'IBM Plex Mono',monospace;font-size:13px;width:42px;text-align:right;color:var(--ink-soft)}
-  .findings li{margin:0 0 11px 20px;font-size:16px;line-height:1.45}
-  .findings li.flag{color:var(--red)}
-  .findings li.warn{color:var(--yellow)}
-  .findings li.ok{color:var(--green)}
+  .findings{list-style:none;padding:0;margin-top:6px}
+  .findings li{margin:0 0 12px;padding:14px 16px 14px 18px;background:#fff;border:1px solid var(--line);border-radius:var(--radius);border-left:4px solid var(--line-strong)}
+  .findings li.flag{border-left-color:var(--red)}
+  .findings li.warn{border-left-color:var(--yellow)}
+  .findings li.ok{border-left-color:var(--green)}
+  .finding-q{font-weight:500;color:var(--ink);font-size:15.5px;line-height:1.4}
+  .finding-q .crit{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.08em;color:var(--red);background:var(--red-bg);padding:2px 8px;border-radius:100px;margin-left:8px;text-transform:uppercase;font-weight:600;vertical-align:middle}
+  .finding-a{margin-top:8px;font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.06em;color:var(--ink-faint);text-transform:uppercase;display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+  .finding-a .chip{padding:3px 11px;border-radius:100px;font-weight:600;font-size:11px;letter-spacing:.02em;text-transform:none;font-family:'Newsreader',serif}
+  .finding-a .chip.red{background:var(--red-bg);color:var(--red)}
+  .finding-a .chip.yel{background:var(--yellow-bg);color:var(--yellow)}
+  .finding-a .chip.grn{background:var(--green-bg);color:var(--green)}
+  .finding-a .chip.unk{background:var(--paper-2);color:var(--ink-faint);font-style:italic}
+  .finding-ev{margin-top:10px;font-size:14.5px;color:var(--ink-soft);font-style:italic;line-height:1.5;padding:8px 0 0 12px;border-left:2px solid var(--line)}
+  .finding-ev .src{display:block;margin-top:4px;font-style:normal;color:var(--ink-faint);font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:.02em;word-break:break-all}
+  .finding-ev .src a{color:var(--ink);text-decoration:underline}
+
+  .edu-card .learn-more{display:inline-flex;align-items:center;gap:8px;margin-top:14px;font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);text-decoration:none;border-bottom:1px solid var(--line-strong);padding:0 0 3px;transition:.15s;align-self:flex-start}
+  .edu-card .learn-more:hover{border-bottom-color:var(--ink);color:var(--ink)}
+  .edu-card .learn-more::after{content:'↗';font-size:13px;letter-spacing:0}
   .reqs-table{width:100%;border-collapse:collapse;margin-top:8px;font-size:15px}
   .reqs-table td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
   .reqs-table td:first-child{width:30px}
@@ -643,37 +659,48 @@ const RUBRIC = [
 const GLOSSARY = [
   {term:"SOC 2 Type II", title:"The big audit report",
    body:"An independent auditing firm observes a vendor's security controls over 6–12 months and certifies they actually work. <b>Type II</b> = watched over time. <b>Type I</b> = a single-day snapshot (weaker).",
-   plain:"Think of it as a health inspection that lasted a year, not one afternoon. It's the #1 document a CISO wants."},
+   plain:"Think of it as a health inspection that lasted a year, not one afternoon. It's the #1 document a CISO wants.",
+   link:{label:"AICPA — SOC suite of services", url:"https://www.aicpa-cima.com/resources/landing/system-and-organization-controls-soc-suite-of-services"}},
   {term:"HECVAT 4", title:"The higher-ed rubric",
    body:"The <b>Higher Education Community Vendor Assessment Toolkit</b>, maintained by EDUCAUSE. Version 4 (2025) added a dedicated <b>AI/ML section</b> and a privacy section. It's the standard hundreds of colleges use to vet vendors — and what Andy's building his program around.",
-   plain:"It's the shared checklist colleges agreed to use so every vendor gets graded the same way."},
+   plain:"It's the shared checklist colleges agreed to use so every vendor gets graded the same way.",
+   link:{label:"EDUCAUSE — HECVAT", url:"https://www.educause.edu/hecvat"}},
   {term:"Encryption (in transit / at rest)", title:"Scrambling your data",
    body:"<b>In transit</b>: data is scrambled while moving across the internet (the browser padlock / TLS). <b>At rest</b>: it stays scrambled while stored on the vendor's servers.",
-   plain:"Locked in the armored truck on the way there, and locked in the vault once it arrives. You want both."},
+   plain:"Locked in the armored truck on the way there, and locked in the vault once it arrives. You want both.",
+   link:{label:"Cloudflare — What is encryption?", url:"https://www.cloudflare.com/learning/ssl/what-is-encryption/"}},
   {term:"Model training", title:"Does the AI learn from you?",
    body:"When an AI <b>trains</b> on data, that data shapes the model and can influence future answers for other users. The key question for any AI tool is whether <b>your</b> data is used for training.",
-   plain:"You don't want your institution's private emails becoming part of the AI's permanent memory. 'No training on our data, in writing' is the goal."},
+   plain:"You don't want your institution's private emails becoming part of the AI's permanent memory. 'No training on our data, in writing' is the goal.",
+   link:{label:"OpenAI — Enterprise privacy & data usage", url:"https://openai.com/enterprise-privacy/"}},
   {term:"Sub-processor", title:"The vendor's vendors",
    body:"A third party the vendor hands your data to in order to do its job — most commonly the LLM provider (OpenAI, Anthropic, Google) behind the AI features, plus cloud hosting.",
-   plain:"If you hire a caterer who hires a baker, the baker is a sub-processor. You still want to know who's touching the food."},
+   plain:"If you hire a caterer who hires a baker, the baker is a sub-processor. You still want to know who's touching the food.",
+   link:{label:"GDPR Article 28 — Processor obligations", url:"https://gdpr.eu/article-28-processor-contract/"}},
   {term:"OAuth & permission scope", title:"The 'Allow access?' screen",
    body:"<b>OAuth</b> is the secure sign-in that lets one app act in another (e.g. 'Sign in with Microsoft'). The <b>scopes</b> are the specific permissions granted — read mail, send mail, read files, etc.",
-   plain:"It's the list of keys you're handing over. 'Read my inbox' is one key. 'Do anything in the whole district account' is the master key — be careful."},
+   plain:"It's the list of keys you're handing over. 'Read my inbox' is one key. 'Do anything in the whole district account' is the master key — be careful.",
+   link:{label:"OAuth.net — Introduction to OAuth 2", url:"https://oauth.net/2/"}},
   {term:"DPA — Data Processing Agreement", title:"The data contract",
    body:"A legal agreement defining how the vendor may handle institutional data, their obligations, and your rights. Often required before any institutional data is shared.",
-   plain:"It turns a friendly 'don't worry, we're careful' into a signed, enforceable promise."},
+   plain:"It turns a friendly 'don't worry, we're careful' into a signed, enforceable promise.",
+   link:{label:"GDPR.eu — Data Processing Agreement guide", url:"https://gdpr.eu/what-is-data-processing-agreement/"}},
   {term:"Data flow diagram", title:"The map of your data",
    body:"A simple visual showing what data is collected, where it travels, and who can access it along the way.",
-   plain:"A treasure map for your data — so the reviewer can see exactly where the X's are. Andy asked for this one specifically."},
+   plain:"A treasure map for your data — so the reviewer can see exactly where the X's are. Andy asked for this one specifically.",
+   link:{label:"Lucidchart — Data flow diagram examples", url:"https://www.lucidchart.com/pages/data-flow-diagram"}},
   {term:"Penetration test", title:"Hire hackers on purpose",
    body:"An authorized simulated attack where security pros try to break into the product and report the weaknesses they find. 'Recent' means within ~12 months.",
-   plain:"Paying someone to try to pick your locks before a burglar does."},
+   plain:"Paying someone to try to pick your locks before a burglar does.",
+   link:{label:"OWASP — Penetration Testing", url:"https://owasp.org/www-community/controls/Penetration_Testing"}},
   {term:"FERPA", title:"Student-record privacy law",
    body:"The federal law protecting the privacy of student education records. Any tool touching student data inherits FERPA obligations, which raises the review bar substantially.",
-   plain:"The reason 'does it touch the student system?' is such an important question. If yes, everything gets more serious."},
+   plain:"The reason 'does it touch the student system?' is such an important question. If yes, everything gets more serious.",
+   link:{label:"U.S. Dept. of Education — FERPA", url:"https://studentprivacy.ed.gov/ferpa"}},
   {term:"Least privilege", title:"Only the keys you need",
    body:"A security principle: every person or app should have the minimum access required to do its job — nothing extra.",
-   plain:"The intern doesn't get the keys to the vault. Applies to the vendor's staff and to the app's permissions."},
+   plain:"The intern doesn't get the keys to the vault. Applies to the vendor's staff and to the app's permissions.",
+   link:{label:"NIST — Principle of least privilege", url:"https://csrc.nist.gov/glossary/term/least_privilege"}},
   {term:"Red / Yellow / Green", title:"What the verdict means",
    body:"<b>Green</b> = controls are strong, recommend approval. <b>Yellow</b> = approvable with specific conditions (a clause, a narrower scope, a follow-up doc). <b>Red</b> = a critical control is missing; hold until remediated.",
    plain:"Green = go. Yellow = go, but fix these first. Red = stop and have a conversation."}
@@ -898,20 +925,54 @@ function verdictSummary(s,a){
   return `One or more critical controls are missing or unacceptable. Do not approve for institutional use until the red-flagged items are remediated, or consider an alternative tool.`;
 }
 
+function findingLi(q, v, note, kind){
+  const isUnanswered = v == null;
+  const chosen = isUnanswered ? null : q.opts.find(o => o.v === Number(v));
+  const num = Number(v);
+  const chipClass = isUnanswered ? 'unk' : (num === 0 ? 'red' : num === 0.5 ? 'yel' : 'grn');
+  const chipLabel = isUnanswered ? 'Unanswered — open gap' : (chosen ? chosen.l : '—');
+  let evidenceHtml = '';
+  if(note && note.trim()){
+    const trimmed = note.trim();
+    // notes may be appended (multiple "evidence (source: url)" blocks); render each on its own line
+    const blocks = trimmed.split(/\n+/);
+    const rendered = blocks.map(block => {
+      const t = block.trim();
+      if(!t) return '';
+      const idx = t.lastIndexOf('(source:');
+      if(idx > 0 && t.endsWith(')')){
+        const text = t.slice(0, idx).trim();
+        const src = t.slice(idx + '(source:'.length, -1).trim();
+        const isUrl = /^https?:\/\//i.test(src);
+        const srcHtml = isUrl
+          ? `<a href="${esc(src)}" target="_blank" rel="noopener">${esc(src)}</a>`
+          : esc(src);
+        return `<div>${esc(text)}<span class="src">Source: ${srcHtml}</span></div>`;
+      }
+      return `<div>${esc(t)}</div>`;
+    }).join('');
+    evidenceHtml = `<div class="finding-ev">${rendered}</div>`;
+  }
+  return `<li class="${kind}">
+    <div class="finding-q">${esc(q.text)}${q.critical?'<span class="crit">★ Critical</span>':''}</div>
+    <div class="finding-a"><span>Answer:</span><span class="chip ${chipClass}">${esc(chipLabel)}</span></div>
+    ${evidenceHtml}
+  </li>`;
+}
+
 function renderReport(a){
   const s=scoreOf(a);
   const host=document.getElementById('report-host');
   const dt=new Date(a.finalized||Date.now()).toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
 
-  // findings
-  const flags=[],warns=[],oks=[];
-  RUBRIC.forEach(sec=>{ if(sec.profile)return; sec.questions.forEach(q=>{
-    const v=a.answers[q.id]; if(v==null){ flags.push(`<b>Unanswered:</b> ${q.text} — treat as an open gap.${q.critical?' <b>(Critical)</b>':''}`); return; }
-    const chosen=q.opts.find(o=>o.v===Number(v));
-    const lbl=chosen?chosen.l:'';
-    if(Number(v)===0) flags.push(`${q.text} <em>— ${lbl}.</em>${q.critical?' <b>(Critical)</b>':''}`);
-    else if(Number(v)===0.5) warns.push(`${q.text} <em>— ${lbl}.</em>${q.critical?' <b>(Critical)</b>':''}`);
-    else oks.push(`${q.text}`);
+  // findings — each item carries its question, chosen answer chip, and evidence + source
+  const flagsLi=[], warnsLi=[], oksLi=[];
+  RUBRIC.forEach(sec=>{ if(sec.profile) return; sec.questions.forEach(q=>{
+    const v=a.answers[q.id];
+    const note=a.notes[q.id]||'';
+    if(v==null || Number(v)===0) flagsLi.push(findingLi(q, v, note, 'flag'));
+    else if(Number(v)===0.5) warnsLi.push(findingLi(q, v, note, 'warn'));
+    else oksLi.push(findingLi(q, v, note, 'ok'));
   });});
 
   // requirements checklist (Andy's 8 items mapped to answers)
@@ -944,12 +1005,6 @@ function renderReport(a){
     </div>`;
   }).join('');
 
-  // reviewer notes
-  let notesHtml='';
-  RUBRIC.forEach(sec=>{ if(sec.profile)return; sec.questions.forEach(q=>{
-    if(a.notes[q.id] && a.notes[q.id].trim()) notesHtml+=`<b>${q.text}</b>\n${a.notes[q.id].trim()}\n\n`;
-  });});
-
   host.innerHTML = `
   <div class="rpt-head">
     <div class="org">North Orange County Community College District · Third-Party AI &amp; Vendor Risk Assessment</div>
@@ -978,11 +1033,9 @@ function renderReport(a){
     <div class="rpt-section-title">CISO documentation checklist</div>
     <table class="reqs-table">${reqRows}</table>
 
-    ${flags.length?`<div class="rpt-section-title">⚑ Red flags &amp; gaps to resolve</div><ul class="findings">${flags.map(f=>`<li class="flag">${f}</li>`).join('')}</ul>`:''}
-    ${warns.length?`<div class="rpt-section-title">△ Conditions &amp; items to confirm</div><ul class="findings">${warns.map(f=>`<li class="warn">${f}</li>`).join('')}</ul>`:''}
-    ${oks.length?`<div class="rpt-section-title">✓ Controls in good standing</div><ul class="findings">${oks.map(f=>`<li class="ok">${f}</li>`).join('')}</ul>`:''}
-
-    ${notesHtml?`<div class="rpt-section-title">Reviewer notes</div><div class="notes-block">${esc(notesHtml.trim())}</div>`:''}
+    ${flagsLi.length?`<div class="rpt-section-title">⚑ Red flags &amp; gaps to resolve</div><ul class="findings">${flagsLi.join('')}</ul>`:''}
+    ${warnsLi.length?`<div class="rpt-section-title">△ Conditions &amp; items to confirm</div><ul class="findings">${warnsLi.join('')}</ul>`:''}
+    ${oksLi.length?`<div class="rpt-section-title">✓ Controls in good standing</div><ul class="findings">${oksLi.join('')}</ul>`:''}
   </div>
   <div class="rpt-foot">
     Generated by Signal · a self-service pre-screen aligned to the EDUCAUSE HECVAT 4 framework. This report supports, but does not replace, formal review by the District Information Security Office. Verdict logic: a missing critical control (★) caps the rating at RED; an unconfirmed critical control caps it at YELLOW. Weighted score is the importance-weighted average across answered categories.
@@ -1061,6 +1114,7 @@ function renderLearn(){
       <h3>${g.title}</h3>
       <p>${g.body}</p>
       <div class="plain"><b>In plain terms</b>${g.plain}</div>
+      ${g.link?`<a class="learn-more" href="${esc(g.link.url)}" target="_blank" rel="noopener">${esc(g.link.label)}</a>`:''}
     </div>`).join('');
 }
 
