@@ -172,6 +172,52 @@
   .fcard .fhead p{font-size:16px;color:var(--ink-soft);margin-top:7px;max-width:70ch;line-height:1.45}
   .fbody{padding:8px 26px 22px}
 
+  /* ---- Auto-fill from Trust Center ---- */
+  .autofill{border:1px solid var(--line-strong);border-radius:var(--radius);background:var(--paper-2);margin-bottom:22px;overflow:hidden}
+  .autofill > summary{list-style:none;cursor:pointer;padding:16px 22px;display:flex;align-items:center;gap:14px;border-bottom:1px solid transparent}
+  .autofill > summary::-webkit-details-marker{display:none}
+  .autofill[open] > summary{border-bottom-color:var(--line-strong)}
+  .autofill .bolt{font-size:16px;width:32px;height:32px;border-radius:50%;background:var(--ink);color:var(--paper);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:'IBM Plex Mono',monospace;font-weight:600}
+  .autofill .af-title{font-family:'Fraunces',serif;font-weight:700;font-size:19px;letter-spacing:-.01em}
+  .autofill .af-hint{font-size:14px;color:var(--ink-faint);font-style:italic;flex:1;line-height:1.35}
+  .autofill > summary::after{content:'▾';margin-left:auto;color:var(--ink-faint);font-size:12px;font-family:'IBM Plex Mono',monospace}
+  .autofill[open] > summary::after{content:'▴'}
+  .af-body{padding:6px 22px 22px;background:var(--paper)}
+  .af-steps{list-style:none;padding:0;margin:0}
+  .af-steps > li{padding:16px 0;border-bottom:1px dashed var(--line)}
+  .af-steps > li:last-child{border-bottom:none;padding-bottom:0}
+  .af-step-h{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+  .af-step-h .num{width:24px;height:24px;border-radius:50%;background:var(--paper-2);border:1.5px solid var(--line-strong);display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-soft);flex-shrink:0}
+  .af-step-h h4{font-family:'Fraunces',serif;font-weight:600;font-size:17px;letter-spacing:-.005em;margin:0}
+  .af-help{font-size:14.5px;color:var(--ink-soft);margin:4px 0 10px 36px;line-height:1.45}
+  .af-actions{display:flex;gap:10px;align-items:center;margin-top:10px;flex-wrap:wrap}
+  .af-status{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.04em;color:var(--ink-faint)}
+  .af-status.ok{color:var(--green)}
+  .af-status.err{color:var(--red)}
+  .autofill textarea{min-height:62px;font-size:15px}
+  #af-json{font-family:'IBM Plex Mono',monospace;font-size:13px;line-height:1.5;min-height:120px}
+  .af-preview{margin-top:10px;border:1px solid var(--line-strong);border-radius:var(--radius);background:var(--paper-2)}
+  .af-preview-h{display:flex;justify-content:space-between;align-items:center;padding:9px 14px;border-bottom:1px solid var(--line);font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-faint)}
+  .af-preview-h .x{background:none;border:none;cursor:pointer;font-size:20px;color:var(--ink-faint);line-height:1;padding:0 4px}
+  .af-preview pre{padding:14px 18px;font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--ink);max-height:340px;overflow:auto;white-space:pre-wrap;word-wrap:break-word;line-height:1.5;margin:0}
+
+  /* ---- Vendor follow-up email modal ---- */
+  .modal-backdrop{position:fixed;inset:0;background:rgba(28,26,23,.55);z-index:300;display:none;align-items:center;justify-content:center;padding:30px}
+  .modal-backdrop.show{display:flex}
+  .modal{background:var(--paper);border:1px solid var(--ink);border-radius:var(--radius);max-width:760px;width:100%;max-height:88vh;display:flex;flex-direction:column;box-shadow:var(--shadow)}
+  .modal-h{padding:18px 26px;border-bottom:1px solid var(--line-strong);background:var(--paper-2);display:flex;justify-content:space-between;align-items:flex-start;gap:18px}
+  .modal-h h3{font-family:'Fraunces',serif;font-weight:700;font-size:22px;letter-spacing:-.01em;line-height:1.1}
+  .modal-h .vm-sum{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);margin-top:6px}
+  .modal-h .vm-sum b{color:var(--red);font-weight:600}
+  .modal-h .x{background:none;border:none;cursor:pointer;font-size:24px;color:var(--ink-faint);line-height:1;padding:0 6px;flex-shrink:0}
+  .modal-body{padding:18px 26px;overflow:auto;flex:1}
+  .email-meta{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-faint);letter-spacing:.04em;text-transform:uppercase;margin-bottom:10px}
+  .email-meta b{color:var(--ink);font-weight:600}
+  pre.email-body{font-family:'Newsreader',serif;font-size:15.5px;color:var(--ink);white-space:pre-wrap;word-wrap:break-word;line-height:1.55;background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:20px 24px;margin:0}
+  .modal-f{padding:14px 26px;border-top:1px solid var(--line-strong);background:var(--paper-2);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+  .modal-f .note{font-size:13px;color:var(--ink-faint);font-style:italic;flex:1;min-width:200px}
+  .modal-f .acts{display:flex;gap:10px}
+
   .q{padding:18px 0;border-bottom:1px solid var(--line)}
   .q:last-child{border-bottom:none}
   .q .qtop{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}
@@ -378,6 +424,44 @@
       </div>
       <button class="btn sm ghost" onclick="go('library')">‹ Library</button>
     </div>
+
+    <details class="autofill" id="autofill">
+      <summary>
+        <span class="bolt">⚡</span>
+        <span>
+          <span class="af-title">Auto-fill from the vendor's Trust Center</span>
+          <div class="af-hint">Paste a Trust Center URL, run a prompt in Claude.ai or ChatGPT, paste the JSON back — Signal pre-fills every answer with evidence quotes.</div>
+        </span>
+      </summary>
+      <div class="af-body">
+        <ol class="af-steps">
+          <li>
+            <div class="af-step-h"><span class="num">1</span><h4>List the vendor's security pages</h4></div>
+            <p class="af-help">One URL per line — the Trust Center root, security whitepaper, sub-processor list, AI/privacy policy, DPA, etc. More specific URLs → better answers.</p>
+            <textarea id="af-urls" placeholder="https://trust.superhuman.com&#10;https://superhuman.com/privacy" rows="3"></textarea>
+          </li>
+          <li>
+            <div class="af-step-h"><span class="num">2</span><h4>Run the prompt in Claude.ai or ChatGPT</h4></div>
+            <p class="af-help">Use any AI that can browse the web. It reads your URLs, works through all 16 rubric questions, and returns structured JSON. Free tiers work fine.</p>
+            <div class="af-actions">
+              <button class="btn sm" onclick="copyAutofillPrompt()">⎘ Copy prompt to clipboard</button>
+              <button class="btn sm ghost" onclick="previewAutofillPrompt()">Preview prompt</button>
+            </div>
+            <div id="af-preview-wrap"></div>
+          </li>
+          <li>
+            <div class="af-step-h"><span class="num">3</span><h4>Paste the AI's JSON response and apply</h4></div>
+            <p class="af-help">Signal fills in answers, evidence quotes, and source URLs. You can edit anything afterward — nothing is locked. Markdown code-fences are stripped automatically.</p>
+            <textarea id="af-json" placeholder='{ "profile": { "name": "Superhuman", ... }, "answers": { "co_audit": { "value": 1, "evidence": "...", "source": "..." }, ... } }' rows="5" spellcheck="false"></textarea>
+            <div class="af-actions">
+              <button class="btn sm" onclick="applyAutofill()">▸ Apply answers</button>
+              <span class="af-status" id="af-status"></span>
+            </div>
+          </li>
+        </ol>
+      </div>
+    </details>
+
     <div class="assess-layout">
       <aside class="rail"><ol id="rail-list"></ol></aside>
       <main id="form-host"></main>
@@ -390,6 +474,7 @@
   <div class="wrap">
     <div class="report-actions">
       <button class="btn sm ghost" onclick="editCurrent()">‹ Edit answers</button>
+      <button class="btn sm ghost" onclick="openVendorEmail()">✉ Draft vendor follow-up</button>
       <button class="btn sm ghost" onclick="exportJSON()">⤓ Export data</button>
       <button class="btn sm" onclick="window.print()">⎙ Print / Save PDF</button>
     </div>
@@ -416,6 +501,29 @@
     <span>Rubric basis: EDUCAUSE HECVAT 4 · runs entirely in your browser</span>
   </div>
 </footer>
+
+<div class="modal-backdrop" id="vendor-modal" onclick="if(event.target===this) closeVendorEmail()">
+  <div class="modal">
+    <div class="modal-h">
+      <div>
+        <h3>Vendor follow-up email</h3>
+        <div class="vm-sum" id="vm-sum"></div>
+      </div>
+      <button class="x" onclick="closeVendorEmail()" aria-label="Close">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="email-meta"><b>Subject:</b> <span id="vm-subject"></span></div>
+      <pre class="email-body" id="vm-body"></pre>
+    </div>
+    <div class="modal-f">
+      <span class="note">Add the vendor's contact in your mail client. The email is editable — tighten the tone before sending.</span>
+      <div class="acts">
+        <button class="btn sm ghost" onclick="mailtoVendorEmail()">Open in mail app</button>
+        <button class="btn sm" onclick="copyVendorEmail()">⎘ Copy email</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <div class="toast" id="toast"></div>
 
@@ -683,13 +791,18 @@ function saveCurrent(silent){
 /* ---------- scoring engine ---------- */
 function scoreOf(a){
   let totalW=0, gotW=0;
-  const cats=[]; let criticalFail=false, criticalWarn=false;
+  const cats=[]; let criticalFail=false, criticalWarn=false, criticalUnanswered=0;
   RUBRIC.forEach(sec=>{
     if(sec.profile) return;
     let cw=0, cg=0, answered=0;
     sec.questions.forEach(q=>{
       const v = a.answers[q.id];
-      if(v==null) return;
+      if(v==null){
+        // An unanswered critical control is itself a gap — treat as a failed critical.
+        // README: "A missing critical control... caps the verdict at RED."
+        if(q.critical){ criticalFail=true; criticalUnanswered++; }
+        return;
+      }
       answered++;
       cw+=1; cg+=Number(v);
       if(q.critical){ if(Number(v)===0) criticalFail=true; else if(Number(v)===0.5) criticalWarn=true; }
@@ -707,7 +820,7 @@ function scoreOf(a){
   else verdict="RED";
   // a critical warn caps at YELLOW even with high score
   if(verdict==="GREEN" && criticalWarn) verdict="YELLOW";
-  return {overall,cats,verdict,criticalFail,criticalWarn};
+  return {overall,cats,verdict,criticalFail,criticalWarn,criticalUnanswered};
 }
 
 function totalAnswered(a){
@@ -793,11 +906,11 @@ function renderReport(a){
   // findings
   const flags=[],warns=[],oks=[];
   RUBRIC.forEach(sec=>{ if(sec.profile)return; sec.questions.forEach(q=>{
-    const v=a.answers[q.id]; if(v==null){ flags.push(`<b>Unanswered:</b> ${q.text} — treat as an open gap.`); return; }
+    const v=a.answers[q.id]; if(v==null){ flags.push(`<b>Unanswered:</b> ${q.text} — treat as an open gap.${q.critical?' <b>(Critical)</b>':''}`); return; }
     const chosen=q.opts.find(o=>o.v===Number(v));
     const lbl=chosen?chosen.l:'';
     if(Number(v)===0) flags.push(`${q.text} <em>— ${lbl}.</em>${q.critical?' <b>(Critical)</b>':''}`);
-    else if(Number(v)===0.5) warns.push(`${q.text} <em>— ${lbl}.</em>`);
+    else if(Number(v)===0.5) warns.push(`${q.text} <em>— ${lbl}.</em>${q.critical?' <b>(Critical)</b>':''}`);
     else oks.push(`${q.text}`);
   });});
 
@@ -963,6 +1076,234 @@ function exportJSON(){
 function esc(s){ return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 let toastT;
 function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),1800); }
+
+/* ---------- auto-fill from Trust Center ---------- */
+function buildAutofillPrompt(urlsRaw){
+  const urls = (urlsRaw||"").split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
+  const urlBlock = urls.length ? urls.map(u=>`- ${u}`).join('\n')
+                               : '(No URLs provided. Ask the requester for the vendor\'s Trust Center URL before answering.)';
+  let qBlock = '';
+  RUBRIC.forEach(sec=>{
+    if(sec.profile) return;
+    qBlock += `\n## ${sec.title}\n`;
+    sec.questions.forEach(q=>{
+      qBlock += `\n- id: "${q.id}"${q.critical?' ★ CRITICAL':''}\n`;
+      qBlock += `  Q: ${q.text}\n`;
+      qBlock += `  Options: ${q.opts.map(o=>`${o.v} = ${o.l}`).join(' | ')}\n`;
+    });
+  });
+  return `You are evaluating a vendor's security & privacy posture for a higher-education institution's third-party risk review. The rubric is aligned to EDUCAUSE HECVAT 4. Read the vendor's actual documentation and return structured JSON answers.
+
+# SOURCES TO READ
+${urlBlock}
+
+If those pages link to a SOC 2 report, security whitepaper, AI/ML policy, sub-processor list, DPA, or pen-test report, follow those links and read them too. Answer from the documents — not from your training data.
+
+# PROFILE — extract from the vendor's site
+- name: short product name (e.g. "Superhuman")
+- vendor: legal company name
+- purpose: one sentence on what the product does
+- dataTypes: what institutional data it would touch in a typical deployment (be specific — "faculty email content from one mailbox" not just "email")
+
+# QUESTIONS
+For each question, pick the option whose VALUE best matches the documented position. Use null if not documented — do NOT guess. Questions marked ★ are CRITICAL: a missing critical control caps the verdict at RED.
+${qBlock}
+
+# OUTPUT — return ONLY this JSON, no prose, no markdown fences:
+{
+  "profile": {"name": "...", "vendor": "...", "purpose": "...", "dataTypes": "..."},
+  "answers": {
+    "co_audit": {"value": 1, "evidence": "short direct quote or paraphrase", "source": "URL or doc title"}
+    // ...one entry per question id listed above, in order
+  }
+}
+
+Rules:
+- "value" MUST be one of the option numbers shown for that question, or null.
+- "evidence" is one short factual sentence — quote the doc when possible.
+- "source" is the most specific URL or document title you used.
+- Include every question id, even if value is null.`;
+}
+
+function copyAutofillPrompt(){
+  const urls = document.getElementById('af-urls').value;
+  const prompt = buildAutofillPrompt(urls);
+  const done = ()=>{ toast('Prompt copied — paste into Claude.ai or ChatGPT'); setAfStatus('Prompt copied to clipboard.', 'ok'); };
+  const fallback = ()=>{
+    const ta=document.createElement('textarea'); ta.value=prompt;
+    ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta);
+    ta.select(); try{document.execCommand('copy'); done();}catch(e){setAfStatus('Copy failed — use Preview and copy manually.','err');} document.body.removeChild(ta);
+  };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(prompt).then(done, fallback);
+  } else fallback();
+}
+
+function previewAutofillPrompt(){
+  const wrap=document.getElementById('af-preview-wrap');
+  if(wrap.firstChild){ wrap.innerHTML=''; return; }
+  const urls=document.getElementById('af-urls').value;
+  const prompt=buildAutofillPrompt(urls);
+  wrap.innerHTML = `<div class="af-preview"><div class="af-preview-h"><span>Prompt preview · ${prompt.length} chars</span><button class="x" onclick="document.getElementById('af-preview-wrap').innerHTML=''" aria-label="Close">×</button></div><pre>${esc(prompt)}</pre></div>`;
+}
+
+function setAfStatus(msg, kind){
+  const el=document.getElementById('af-status');
+  if(!el) return;
+  el.textContent=msg; el.className='af-status '+(kind||'');
+}
+
+function applyAutofill(){
+  const raw=(document.getElementById('af-json').value||'').trim();
+  if(!raw){ setAfStatus('Paste the JSON response first.', 'err'); return; }
+  // strip ```json fences or extract first {...} block
+  let jsonStr=raw;
+  const fence=raw.match(/```(?:json)?\s*([\s\S]*?)```/i);
+  if(fence) jsonStr=fence[1].trim();
+  if(!jsonStr.startsWith('{')){
+    const s=jsonStr.indexOf('{'), e=jsonStr.lastIndexOf('}');
+    if(s>=0 && e>s) jsonStr=jsonStr.slice(s, e+1);
+  }
+  let data;
+  try{ data=JSON.parse(jsonStr); }
+  catch(e){ setAfStatus('Could not parse JSON: '+e.message, 'err'); return; }
+
+  let filled=0, nulls=0, invalid=0, notes=0;
+  const allQs=[]; RUBRIC.forEach(s=>{ if(!s.profile) s.questions.forEach(q=>allQs.push(q)); });
+
+  if(data.profile && typeof data.profile==='object'){
+    ['name','vendor','purpose','dataTypes'].forEach(k=>{
+      const v=data.profile[k];
+      if(typeof v==='string' && v.trim()) current[k]=v.trim();
+    });
+  }
+
+  if(data.answers && typeof data.answers==='object'){
+    allQs.forEach(q=>{
+      const a=data.answers[q.id];
+      if(!a || typeof a!=='object') return;
+      if(a.value!==null && a.value!==undefined){
+        const allowed=q.opts.map(o=>o.v);
+        const num=Number(a.value);
+        if(allowed.includes(num)){ current.answers[q.id]=num; filled++; }
+        else invalid++;
+      } else nulls++;
+      if(typeof a.evidence==='string' && a.evidence.trim()){
+        const src=(typeof a.source==='string' && a.source.trim()) ? ` (source: ${a.source.trim()})` : '';
+        const newNote=a.evidence.trim()+src;
+        const existing=current.notes[q.id]||'';
+        if(!existing.includes(a.evidence.trim())){
+          current.notes[q.id] = existing ? existing+'\n'+newNote : newNote;
+          notes++;
+        }
+      }
+    });
+  }
+
+  saveCurrent(true);
+  buildForm();
+  const bits=[`Applied ${filled} of ${allQs.length} answers`];
+  if(nulls) bits.push(`${nulls} marked unknown`);
+  if(invalid) bits.push(`${invalid} invalid (skipped)`);
+  if(notes) bits.push(`${notes} evidence notes added`);
+  setAfStatus(bits.join(' · '), 'ok');
+  toast(`Auto-filled ${filled} answers — review and edit as needed`);
+}
+
+/* ---------- vendor follow-up email ---------- */
+function buildVendorEmail(a){
+  const unknowns=[], partials=[];
+  RUBRIC.forEach(sec=>{ if(sec.profile) return; sec.questions.forEach(q=>{
+    const v=a.answers[q.id];
+    const note=(a.notes[q.id]||'').trim();
+    if(v==null) unknowns.push({q,note});
+    else if(Number(v)===0.5) partials.push({q,note});
+  });});
+  // critical first
+  const sortCrit=(arr)=>arr.sort((x,y)=>(y.q.critical?1:0)-(x.q.critical?1:0));
+  sortCrit(unknowns); sortCrit(partials);
+
+  const toolName=a.name || 'the requested tool';
+  const vendor=(a.vendor || '').trim();
+  const greeting= vendor ? `Hi ${vendor} team,` : 'Hello,';
+  const requester=a.requester || '[Your name]';
+  const dataTypes=a.dataTypes || '[describe the intended use case]';
+  const criticalGaps=unknowns.filter(u=>u.q.critical).length + partials.filter(p=>p.q.critical).length;
+
+  const subject=`Follow-up — Security & compliance documentation for ${toolName} review`;
+
+  const fmtItem=(it,i)=>{
+    const lines=[`${i+1}. ${it.q.text}${it.q.critical?'   ★ CRITICAL CONTROL':''}`];
+    if(it.note) lines.push(`   What we have so far: ${it.note}`);
+    lines.push(`   Please provide: a direct link to the source document (preferred) or a written statement we can attach to our review file.`);
+    return lines.join('\n');
+  };
+
+  let body=`${greeting}
+
+Thank you again for sharing your Trust Center — that helped us answer a large portion of our institutional review. For context, this review is for North Orange County Community College District (NOCCCD) and follows the EDUCAUSE HECVAT 4 framework that our District Information Security Office uses for third-party risk evaluation.
+
+Intended use case: ${dataTypes}
+
+To complete the review, we need the items below confirmed. For each, please reply with either a direct link to the source document or a brief written statement. Direct links are strongly preferred — our information security office independently verifies our findings, and a citable source makes that step possible.`;
+
+  if(unknowns.length){
+    body += `\n\n=== ITEMS WE COULD NOT LOCATE IN THE TRUST CENTER (${unknowns.length}) ===\n\n` + unknowns.map(fmtItem).join('\n\n');
+  }
+  if(partials.length){
+    body += `\n\n=== ITEMS NEEDING CLARIFICATION (${partials.length}) ===\n\n` + partials.map(fmtItem).join('\n\n');
+  }
+  if(!unknowns.length && !partials.length){
+    body += `\n\n(All review questions are documented from your Trust Center — no outstanding items. You can disregard this email.)`;
+  }
+
+  body += `\n\nIf you maintain a centralized response template — a completed HECVAT, a Higher-Education Vendor Assessment, or similar — we'd welcome that as well; it often answers several of these at once.
+
+Please respond at your convenience. Happy to schedule a brief call if it's easier to walk through any of this together.
+
+Thank you,
+${requester}
+North Orange County Community College District`;
+
+  return {subject, body, unknownCount:unknowns.length, partialCount:partials.length, criticalGaps};
+}
+
+function openVendorEmail(){
+  if(!current){ toast('Open a review first'); return; }
+  const m=buildVendorEmail(current);
+  document.getElementById('vm-subject').textContent=m.subject;
+  document.getElementById('vm-body').textContent=m.body;
+  let sum=`${m.unknownCount} unknown · ${m.partialCount} partial`;
+  if(m.criticalGaps) sum += ` · <b>${m.criticalGaps} critical</b>`;
+  document.getElementById('vm-sum').innerHTML=sum;
+  document.getElementById('vendor-modal').classList.add('show');
+}
+function closeVendorEmail(){ document.getElementById('vendor-modal').classList.remove('show'); }
+function copyVendorEmail(){
+  const subject=document.getElementById('vm-subject').textContent;
+  const body=document.getElementById('vm-body').textContent;
+  const text=`Subject: ${subject}\n\n${body}`;
+  const done=()=>toast('Email copied — paste into Gmail or Outlook');
+  const fallback=()=>{
+    const ta=document.createElement('textarea'); ta.value=text;
+    ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta);
+    ta.select(); try{document.execCommand('copy');done();}catch(e){toast('Copy failed — select the text manually');} document.body.removeChild(ta);
+  };
+  if(navigator.clipboard?.writeText) navigator.clipboard.writeText(text).then(done, fallback);
+  else fallback();
+}
+function mailtoVendorEmail(){
+  const subject=document.getElementById('vm-subject').textContent;
+  const body=document.getElementById('vm-body').textContent;
+  // mailto: handles short bodies fine; very long ones may be truncated by the OS — warn the user once
+  const url=`mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  if(url.length > 1800){ toast('Long email — if your mail app cuts it off, use Copy instead'); }
+  window.location.href=url;
+}
+// Esc closes the modal
+document.addEventListener('keydown', e=>{
+  if(e.key==='Escape' && document.getElementById('vendor-modal')?.classList.contains('show')) closeVendorEmail();
+});
 
 /* ---------- boot ---------- */
 go('home');
