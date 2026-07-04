@@ -465,20 +465,28 @@
       <summary>
         <span class="bolt">⚡</span>
         <span>
-          <span class="af-title">Auto-fill from the vendor's Trust Center</span>
-          <div class="af-hint">Paste a Trust Center URL, run a prompt in Claude.ai or ChatGPT, paste the JSON back — Signal pre-fills every answer with evidence quotes.</div>
+          <span class="af-title">Auto-fill with an AI you already have</span>
+          <div class="af-hint">Signal has no server and no AI of its own — it hands you a prompt, you run it in Claude.ai or ChatGPT (any account, free tier is fine), then bring the answer back here.</div>
         </span>
       </summary>
       <div class="af-body">
         <ol class="af-steps">
           <li>
-            <div class="af-step-h"><span class="num">1</span><h4>List the vendor's security pages</h4></div>
-            <p class="af-help">One URL per line — the Trust Center root, security whitepaper, sub-processor list, AI/privacy policy, DPA, etc. More specific URLs → better answers.</p>
-            <textarea id="af-urls" placeholder="https://trust.superhuman.com&#10;https://superhuman.com/privacy" rows="3"></textarea>
+            <div class="af-step-h"><span class="num">1</span><h4>Give it something to read</h4></div>
+            <p class="af-help">Trust Center / security page URLs (one per line) if you want the AI to browse them itself — <b>and/or</b> paste text directly below: a vendor's email reply, a copied security page, a PDF's contents, whatever you've got. Either works; both together works best.</p>
+            <textarea id="af-urls" placeholder="https://trust.superhuman.com&#10;https://superhuman.com/privacy" rows="2"></textarea>
+            <div class="field" style="margin:10px 0 0">
+              <label>Or paste text directly (email reply, webpage content, PDF text…)</label>
+              <textarea id="af-pasted" placeholder="Paste the vendor's email reply, a copied Trust Center page, or any other source text here." rows="4"></textarea>
+            </div>
+            <label style="display:flex;align-items:center;gap:8px;margin-top:12px;font-size:14.5px;color:var(--ink-soft);cursor:pointer">
+              <input type="checkbox" id="af-gaps-only" style="width:auto">
+              Only ask about questions that are still unanswered <span style="color:var(--ink-faint);font-style:italic">— use this after a vendor follow-up reply, to fill just the gaps</span>
+            </label>
           </li>
           <li>
             <div class="af-step-h"><span class="num">2</span><h4>Run the prompt in Claude.ai or ChatGPT</h4></div>
-            <p class="af-help">Use any AI that can browse the web. It reads your URLs, works through all 16 rubric questions, and returns structured JSON. Free tiers work fine.</p>
+            <p class="af-help">This step happens outside Signal: copy the prompt, paste it into a chat with any AI that can browse the web (Claude.ai, ChatGPT, etc.), let it answer, then come back here with its reply.</p>
             <div class="af-actions">
               <button class="btn sm" onclick="copyAutofillPrompt()">⎘ Copy prompt to clipboard</button>
               <button class="btn sm ghost" onclick="previewAutofillPrompt()">Preview prompt</button>
@@ -486,8 +494,8 @@
             <div id="af-preview-wrap"></div>
           </li>
           <li>
-            <div class="af-step-h"><span class="num">3</span><h4>Paste the AI's JSON response and apply</h4></div>
-            <p class="af-help">Signal fills in answers, evidence quotes, and source URLs. You can edit anything afterward — nothing is locked. Markdown code-fences are stripped automatically.</p>
+            <div class="af-step-h"><span class="num">3</span><h4>Paste the AI's reply here and apply</h4></div>
+            <p class="af-help">Paste its whole reply — Signal pulls the JSON out even if there's extra text around it, code fences, or smart quotes from copy-paste. Nothing is locked afterward; edit any answer by hand.</p>
             <textarea id="af-json" placeholder='{ "profile": { "name": "Superhuman", ... }, "answers": { "co_audit": { "value": 1, "evidence": "...", "source": "..." }, ... } }' rows="5" spellcheck="false"></textarea>
             <div class="af-actions">
               <button class="btn sm" onclick="applyAutofill()">▸ Apply answers</button>
@@ -1235,34 +1243,56 @@ let toastT;
 function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),1800); }
 
 /* ---------- auto-fill from Trust Center ---------- */
-function buildAutofillPrompt(urlsRaw){
+function unansweredQuestionIds(){
+  const ids=[];
+  RUBRIC.forEach(sec=>{ if(sec.profile) return; sec.questions.forEach(q=>{ if(!current || current.answers[q.id]==null) ids.push(q.id); }); });
+  return ids;
+}
+function buildAutofillPrompt(urlsRaw, pastedText, gapsOnly){
   const urls = (urlsRaw||"").split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
-  const urlBlock = urls.length ? urls.map(u=>`- ${u}`).join('\n')
-                               : '(No URLs provided. Ask the requester for the vendor\'s Trust Center URL before answering.)';
-  let qBlock = '';
+  const pasted = (pastedText||"").trim();
+  const hasUrls = urls.length>0, hasPasted = pasted.length>0;
+
+  let sourceBlock = '';
+  if(hasUrls){
+    sourceBlock += `## Pages to read\n${urls.map(u=>`- ${u}`).join('\n')}\n\nIf those pages link to a SOC 2 report, security whitepaper, AI/ML policy, sub-processor list, DPA, or pen-test report, follow those links and read them too.\n`;
+  }
+  if(hasPasted){
+    sourceBlock += `\n## Pasted source text (a vendor email reply, copied webpage, PDF text, etc. — treat as authoritative, already-provided evidence)\n"""\n${pasted}\n"""\n`;
+  }
+  if(!hasUrls && !hasPasted){
+    sourceBlock = '(No sources provided. Ask the requester for the vendor\'s Trust Center URL, or the vendor\'s reply text, before answering.)';
+  }
+  sourceBlock += '\nAnswer from these sources — not from your training data.';
+
+  const gaps = gapsOnly ? new Set(unansweredQuestionIds()) : null;
+  let qBlock = '', firstId = 'co_audit', sawFirst = false;
   RUBRIC.forEach(sec=>{
     if(sec.profile) return;
+    const qs = gaps ? sec.questions.filter(q=>gaps.has(q.id)) : sec.questions;
+    if(!qs.length) return;
     qBlock += `\n## ${sec.title}\n`;
-    sec.questions.forEach(q=>{
+    qs.forEach(q=>{
+      if(!sawFirst){ firstId = q.id; sawFirst = true; }
       qBlock += `\n- id: "${q.id}"${q.critical?' ★ CRITICAL':''}\n`;
       qBlock += `  Q: ${q.text}\n`;
       qBlock += `  Options: ${q.opts.map(o=>`${o.v} = ${o.l}`).join(' | ')}\n`;
     });
   });
-  return `You are evaluating a vendor's security & privacy posture for a higher-education institution's third-party risk review. The rubric is aligned to EDUCAUSE HECVAT 4. Read the vendor's actual documentation and return structured JSON answers.
+  const gapsNote = gapsOnly ? `\nThis is a FOLLOW-UP pass — only the questions still unanswered from the first review are listed below. Ignore any other rubric areas.\n` : '';
 
-# SOURCES TO READ
-${urlBlock}
+  return `You are evaluating a vendor's security & privacy posture for a higher-education institution's third-party risk review. The rubric is aligned to EDUCAUSE HECVAT 4. Read the sources below and return structured JSON answers.
 
-If those pages link to a SOC 2 report, security whitepaper, AI/ML policy, sub-processor list, DPA, or pen-test report, follow those links and read them too. Answer from the documents — not from your training data.
+# SOURCES
+${sourceBlock}
 
-# PROFILE — extract from the vendor's site
+# PROFILE — extract if available (skip fields you don't have evidence for)
 - name: short product name (e.g. "Superhuman")
 - vendor: legal company name
 - purpose: one sentence on what the product does
 - dataTypes: what institutional data it would touch in a typical deployment (be specific — "faculty email content from one mailbox" not just "email")
 
-# QUESTIONS
+# QUESTIONS${gapsNote}
 For each question, pick the option whose VALUE best matches the documented position. Use null if not documented — do NOT guess. Questions marked ★ are CRITICAL: a missing critical control caps the verdict at RED.
 ${qBlock}
 
@@ -1270,7 +1300,7 @@ ${qBlock}
 {
   "profile": {"name": "...", "vendor": "...", "purpose": "...", "dataTypes": "..."},
   "answers": {
-    "co_audit": {"value": 1, "evidence": "short direct quote or paraphrase", "source": "URL or doc title"}
+    "${firstId}": {"value": 1, "evidence": "short direct quote or paraphrase", "source": "URL or doc title"}
     // ...one entry per question id listed above, in order
   }
 }
@@ -1279,13 +1309,25 @@ Rules:
 - "value" MUST be one of the option numbers shown for that question, or null.
 - "evidence" is one short factual sentence — quote the doc when possible.
 - "source" is the most specific URL or document title you used.
-- Include every question id, even if value is null.`;
+- Include every question id listed above, even if value is null.`;
 }
 
+function readAfInputs(){
+  return {
+    urls: document.getElementById('af-urls').value,
+    pasted: document.getElementById('af-pasted').value,
+    gapsOnly: document.getElementById('af-gaps-only').checked,
+  };
+}
 function copyAutofillPrompt(){
-  const urls = document.getElementById('af-urls').value;
-  const prompt = buildAutofillPrompt(urls);
-  const done = ()=>{ toast('Prompt copied — paste into Claude.ai or ChatGPT'); setAfStatus('Prompt copied to clipboard.', 'ok'); };
+  const {urls, pasted, gapsOnly} = readAfInputs();
+  if(gapsOnly && !unansweredQuestionIds().length){ setAfStatus('Nothing to fill — every question already has an answer.', 'err'); return; }
+  const prompt = buildAutofillPrompt(urls, pasted, gapsOnly);
+  const n = gapsOnly ? unansweredQuestionIds().length : null;
+  const done = ()=>{
+    toast('Prompt copied — paste into Claude.ai or ChatGPT');
+    setAfStatus(n!=null ? `Prompt copied — covers ${n} unanswered question${n===1?'':'s'}.` : 'Prompt copied to clipboard.', 'ok');
+  };
   const fallback = ()=>{
     const ta=document.createElement('textarea'); ta.value=prompt;
     ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta);
@@ -1299,8 +1341,8 @@ function copyAutofillPrompt(){
 function previewAutofillPrompt(){
   const wrap=document.getElementById('af-preview-wrap');
   if(wrap.firstChild){ wrap.innerHTML=''; return; }
-  const urls=document.getElementById('af-urls').value;
-  const prompt=buildAutofillPrompt(urls);
+  const {urls, pasted, gapsOnly} = readAfInputs();
+  const prompt=buildAutofillPrompt(urls, pasted, gapsOnly);
   wrap.innerHTML = `<div class="af-preview"><div class="af-preview-h"><span>Prompt preview · ${prompt.length} chars</span><button class="x" onclick="document.getElementById('af-preview-wrap').innerHTML=''" aria-label="Close">×</button></div><pre>${esc(prompt)}</pre></div>`;
 }
 
