@@ -226,6 +226,19 @@
   .q .wt.crit{color:var(--red);border-color:var(--red)}
   .explain{font-size:15.5px;color:var(--ink-soft);background:var(--paper-2);border-left:3px solid var(--line-strong);padding:11px 15px;margin:11px 0 14px;border-radius:0 var(--radius) var(--radius) 0;line-height:1.45;font-style:italic}
   .explain b{font-style:normal;color:var(--ink);font-weight:600}
+  .policy-line{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.05em;text-transform:uppercase;margin:0 0 14px}
+  .policy-lbl{color:var(--ink-faint)}
+  .policy-chip{display:inline-flex;align-items:center;background:var(--paper);border:1px solid var(--line-strong);color:var(--ink);text-decoration:none;padding:4px 10px;border-radius:100px;transition:.14s}
+  .policy-chip:hover{border-color:var(--ink);background:var(--paper-2)}
+  .policy-line.policy-gap{align-items:flex-start}
+  .policy-gap-note{font-family:'Newsreader',serif;font-size:14.5px;letter-spacing:normal;text-transform:none;font-style:italic;color:var(--yellow);line-height:1.4;flex:1;min-width:200px}
+  .policy-summary{list-style:none;padding:0;margin:8px 0 0}
+  .policy-summary li{padding:12px 0;border-bottom:1px dashed var(--line)}
+  .policy-summary li:last-child{border-bottom:none}
+  .policy-summary .ptag{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.05em;color:var(--ink);font-weight:600}
+  .policy-summary .ptitle{font-family:'Fraunces',serif;font-size:16px;font-weight:600;margin:2px 0 4px}
+  .policy-summary .pnote{font-size:14.5px;color:var(--ink-soft);line-height:1.45}
+  .policy-summary a{color:var(--ink)}
   .opts{display:flex;gap:9px;flex-wrap:wrap}
   .opt{flex:1;min-width:140px}
   .opt input{position:absolute;opacity:0;pointer-events:none}
@@ -535,10 +548,10 @@
       <pre class="email-body" id="vm-body"></pre>
     </div>
     <div class="modal-f">
-      <span class="note">Add the vendor's contact in your mail client. The email is editable — tighten the tone before sending.</span>
+      <span class="note">Copy is the reliable option — long emails can get silently truncated by "Open in mail app" on some systems.</span>
       <div class="acts">
         <button class="btn sm ghost" onclick="mailtoVendorEmail()">Open in mail app</button>
-        <button class="btn sm" onclick="copyVendorEmail()">⎘ Copy email</button>
+        <button class="btn sm" onclick="copyVendorEmail()">⎘ Copy email (recommended)</button>
       </div>
     </div>
   </div>
@@ -554,6 +567,38 @@
    asterisked critical questions + High-Risk Evaluation tab).
    ===================================================================== */
 
+/* =====================================================================
+   NOCCCD BOARD POLICY / ADMINISTRATIVE PROCEDURE CITATIONS
+   Verified against the actual PDFs published at nocccd.edu as of this
+   review (July 2026) — not the generic CCLC template numbers. Only
+   policies whose full text was read are cited here. NOCCCD does not yet
+   have an adopted, numbered AI-specific BP/AP (a District AI policy was
+   in first-read/discussion with academic senates Nov 2025–Mar 2026, not
+   finalized) — questions in the AI section note that gap explicitly
+   rather than pointing to a policy that doesn't exist.
+   ===================================================================== */
+const POLICIES = {
+  ap3720:{tag:"AP 3720", title:"Computer and Electronic Communication Systems",
+    url:"https://www.nocccd.edu/documents/ap-3720-computer-and-electronic-communication-systems",
+    note:"§6.0 requires a written information-security program, including annual risk assessments, and requires the District to “select and retain service providers capable of maintaining appropriate safeguards” and bind them by contract to do so."},
+  ap3722:{tag:"AP 3722", title:"District Data Security Standards for End Users",
+    url:"https://www.nocccd.edu/documents/ap-3722-district-data-security-standards-end-users",
+    note:"§9.0 requires any third party accessing District data to sign a Confidentiality &amp; Nondisclosure Agreement, and requires a Data-Sharing Agreement approved by the VC of Educational Services &amp; Technology before any data is shared."},
+  bpap3310:{tag:"BP/AP 3310", title:"Records Retention and Destruction",
+    url:"https://www.nocccd.edu/documents/bp-3310-records-retention-and-destruction",
+    note:"Sets Title 5-based retention classes (Permanent / Optional / minimum 3-year Disposable) covering District records, including electronically stored information."},
+  bpap5040:{tag:"BP/AP 5040", title:"Student Records, Directory Information, and Privacy",
+    url:"https://www.nocccd.edu/documents/bp-5040-student-records-directory-information-and-privacy",
+    note:"NOCCCD's FERPA policy — prohibits disclosure of student personally identifiable information without written consent, apart from narrow directory-information or legal exceptions."},
+  bp6340:{tag:"BP 6340", title:"Bids and Contracts",
+    url:"https://www.nocccd.edu/documents/bp-6340-bids-and-contractspdf",
+    note:"Vendor contracts above the Public Contract Code threshold require Board ratification before they're enforceable; sets the lowest-responsive-bidder rule and delegates contracting authority."},
+  ap3300:{tag:"AP 3300", title:"Public Records",
+    url:"https://www.nocccd.edu/documents/ap-3300-public-records",
+    note:"§5.11–5.12 exempt information-security records and vendor-identifying codes from public disclosure — relevant to how a completed assessment like this one should itself be handled."}
+};
+const AI_POLICY_GAP = "NOCCCD has not yet adopted a numbered AI-specific Board Policy (a District AI policy was in first-read/discussion with academic senates Nov 2025–Mar 2026, not finalized as of this review). The nearest applicable requirement is AP 3722 §9.0's data-sharing agreement mandate — confirm this item in writing with the vendor and route through that process until a dedicated AI policy is adopted.";
+
 const RUBRIC = [
   {
     id:"profile", kicker:"Section 00", title:"The tool & its data",
@@ -567,13 +612,15 @@ const RUBRIC = [
     questions:[
       {id:"co_audit", text:"Does the vendor have a current independent security audit (SOC 2 Type II, ISO 27001, or equivalent)?",
         explain:"<b>SOC 2 Type II</b> is the gold standard: an outside auditor watches the vendor's controls over 6–12 months and writes a report. It's the single most important document your CISO asked Superhuman for. A 'Type II' is far stronger than a 'Type I' (a one-day snapshot).",
-        critical:true,
+        critical:true, policy:["ap3720"],
         opts:[{v:1,l:"Yes — SOC 2 Type II / ISO 27001",t:"good"},{v:.5,l:"Only Type I or self-attested",t:"mid"},{v:0,l:"No / can't find one",t:"bad"}]},
       {id:"co_trust", text:"Is there a public Trust Center or security page with documentation?",
         explain:"A <b>Trust Center</b> is a vendor's public shelf of security paperwork (audits, whitepapers, pen-test summaries). Superhuman pointed you to theirs — that's a good sign of maturity. No trust center isn't disqualifying, but it means more chasing.",
+        policy:["ap3722"],
         opts:[{v:1,l:"Yes, with real documents",t:"good"},{v:.5,l:"Page exists, thin on docs",t:"mid"},{v:0,l:"None",t:"bad"}]},
       {id:"co_pentest", text:"Has the vendor had a recent third-party penetration test?",
         explain:"A <b>penetration test</b> (\"pen test\") is hiring ethical hackers to attack the product on purpose and report what they could break. Recent = within ~12 months. Shows the vendor actively hunts its own weaknesses.",
+        policy:["ap3720"],
         opts:[{v:1,l:"Yes, within 12 months",t:"good"},{v:.5,l:"Older / summary only",t:"mid"},{v:0,l:"No / unknown",t:"bad"}]}
     ]
   },
@@ -584,13 +631,15 @@ const RUBRIC = [
     questions:[
       {id:"d_transit", text:"Is data encrypted in transit (TLS) and at rest?",
         explain:"<b>Encryption in transit</b> scrambles data as it travels over the internet (the padlock in your browser). <b>At rest</b> means it's also scrambled while sitting on the vendor's servers. Both should be standard; missing either is a red flag.",
-        critical:true,
+        critical:true, policy:["ap3722"],
         opts:[{v:1,l:"Both, modern standards",t:"good"},{v:.5,l:"In transit only",t:"mid"},{v:0,l:"Neither / unclear",t:"bad"}]},
       {id:"d_access", text:"Does the vendor enforce least-privilege access and MFA for its own staff?",
         explain:"<b>Least privilege</b> means employees can only touch the data they truly need. <b>MFA</b> (multi-factor authentication) is the second step — a code or tap — beyond a password. Together they limit damage if an employee account is compromised.",
+        policy:["ap3720"],
         opts:[{v:1,l:"Yes, documented",t:"good"},{v:.5,l:"Partial / informal",t:"mid"},{v:0,l:"No / unknown",t:"bad"}]},
       {id:"d_residency", text:"Is data stored with a reputable cloud provider in a known region?",
         explain:"<b>Data residency</b> = which country your data physically lives in. Established providers (AWS, Google Cloud, Azure) in the US/EU are well-understood. Unknown hosting or undisclosed regions raise legal and privacy questions.",
+        policy:["ap3722"],
         opts:[{v:1,l:"Yes, major provider",t:"good"},{v:.5,l:"Unclear region",t:"mid"},{v:0,l:"No / undisclosed",t:"bad"}]}
     ]
   },
@@ -601,13 +650,15 @@ const RUBRIC = [
     questions:[
       {id:"ai_training", text:"Does the vendor confirm in writing that your data is NOT used to train its (or anyone's) AI models?",
         explain:"This is the line in the sand. If a tool <b>trains on your data</b>, your institution's emails could influence the model and potentially surface elsewhere. Andy asked Superhuman for written confirmation that customer data is not used for model training — this question captures exactly that.",
-        critical:true,
+        critical:true, policyGap:AI_POLICY_GAP,
         opts:[{v:1,l:"Yes — in writing",t:"good"},{v:.5,l:"Implied, not explicit",t:"mid"},{v:0,l:"No / trains on data",t:"bad"}]},
       {id:"ai_subproc", text:"Are the AI sub-processors disclosed (e.g. which LLM provider powers the features)?",
         explain:"Most AI tools don't build their own model — they send your text to OpenAI, Anthropic, Google, etc. Those are <b>sub-processors</b>. You need to know who they are, because your data passes through them too. Reputable vendors list them publicly.",
+        policy:["ap3722"],
         opts:[{v:1,l:"Yes, clearly listed",t:"good"},{v:.5,l:"Vaguely / on request",t:"mid"},{v:0,l:"Not disclosed",t:"bad"}]},
       {id:"ai_optout", text:"Do the AI sub-processors offer a zero-retention / no-training mode, and does the vendor use it?",
         explain:"The big LLM providers offer business modes where prompts aren't stored or trained on (\"zero data retention\"). The question is whether the vendor actually turns this on. This is often where a tool moves from yellow to green.",
+        policyGap:AI_POLICY_GAP,
         opts:[{v:1,l:"Yes, confirmed",t:"good"},{v:.5,l:"Available, unconfirmed",t:"mid"},{v:0,l:"No / unknown",t:"bad"}]}
     ]
   },
@@ -618,12 +669,15 @@ const RUBRIC = [
     questions:[
       {id:"p_retention", text:"Is there a clear data retention and deletion policy?",
         explain:"<b>Retention</b> = how long they keep your data. <b>Deletion</b> = what happens when you leave (and whether you can demand erasure). Vague or 'indefinite' retention is a privacy risk, especially for email content.",
+        policy:["bpap3310"],
         opts:[{v:1,l:"Clear, reasonable",t:"good"},{v:.5,l:"Exists but vague",t:"mid"},{v:0,l:"None / indefinite",t:"bad"}]},
       {id:"p_dpa", text:"Will the vendor sign a Data Processing Agreement (DPA)?",
         explain:"A <b>DPA</b> is the contract that legally binds the vendor to handle your data properly. It's how 'they told me it's fine' becomes 'they're contractually obligated.' Institutions almost always require one.",
+        policy:["ap3722"],
         opts:[{v:1,l:"Yes, standard DPA",t:"good"},{v:.5,l:"Negotiable / unclear",t:"mid"},{v:0,l:"No",t:"bad"}]},
       {id:"p_flow", text:"Can the vendor provide a data flow diagram (what data goes where)?",
         explain:"A <b>data flow diagram</b> is a simple map: your data starts here, travels to there, this party can see it. Andy asked for one. It lets a reviewer confirm the data boundaries at a glance.",
+        policy:["ap3722"],
         opts:[{v:1,l:"Yes, available",t:"good"},{v:.5,l:"Can describe, no diagram",t:"mid"},{v:0,l:"No",t:"bad"}]}
     ]
   },
@@ -634,13 +688,15 @@ const RUBRIC = [
     questions:[
       {id:"a_scope", text:"What is the connection scope to institutional systems?",
         explain:"This is exactly the fork in Andy's first reply. Connecting to <b>just your own mailbox</b> is low-risk. Connecting to the whole <b>Office 365 tenant</b> (everyone's mail) is a major escalation that triggers a full review. Narrower is always safer.",
-        critical:true,
+        critical:true, policy:["ap3720","ap3722"],
         opts:[{v:1,l:"Single user / no integration",t:"good"},{v:.5,l:"Departmental scope",t:"mid"},{v:0,l:"Org-wide tenant access",t:"bad"}]},
       {id:"a_oauth", text:"Are the OAuth permissions it requests appropriate (least privilege)?",
         explain:"<b>OAuth</b> is the 'Sign in with Microsoft / allow access?' screen. The permissions it lists are exactly what the tool can do to your account. 'Read your mail' is reasonable; 'read and send mail as you, read all files, read the directory' is a lot. Andy asked for the OAuth permission list.",
+        policy:["ap3720"],
         opts:[{v:1,l:"Minimal, read-focused",t:"good"},{v:.5,l:"Broad but explainable",t:"mid"},{v:0,l:"Excessive / unclear",t:"bad"}]},
       {id:"a_sis", text:"Does it stay clear of student information systems (Banner, Canvas, SIS)?",
         explain:"Anything touching <b>student records</b> pulls in FERPA (the federal student-privacy law) and raises the stakes dramatically. A tool that never touches the SIS is much simpler to approve. You noted Superhuman doesn't connect to these — good.",
+        policy:["bpap5040"],
         opts:[{v:1,l:"Yes, never touches SIS",t:"good"},{v:.5,l:"Indirect / possible",t:"mid"},{v:0,l:"Connects to SIS",t:"bad"}]}
     ]
   },
@@ -651,6 +707,7 @@ const RUBRIC = [
     questions:[
       {id:"o_breach", text:"Is there a documented incident-response / breach-notification process?",
         explain:"<b>Breach notification</b> = the vendor's promise to tell you, quickly, if your data is exposed, and what they'll do about it. Silence-until-the-news-breaks is the nightmare scenario; a documented process is the antidote.",
+        policy:["ap3720"],
         opts:[{v:1,l:"Yes, with timelines",t:"good"},{v:.5,l:"Mentioned, no detail",t:"mid"},{v:0,l:"None",t:"bad"}]},
       {id:"o_bcp", text:"Are there business-continuity / uptime commitments (SLA)?",
         explain:"An <b>SLA</b> (service-level agreement) is the vendor's uptime promise — e.g. 99.9%. <b>Business continuity</b> is their plan to keep running through a disaster. Matters more for tools people rely on every day.",
@@ -708,6 +765,37 @@ const GLOSSARY = [
    body:"<b>Green</b> = controls are strong, recommend approval. <b>Yellow</b> = approvable with specific conditions (a clause, a narrower scope, a follow-up doc). <b>Red</b> = a critical control is missing; hold until remediated.",
    plain:"Green = go. Yellow = go, but fix these first. Red = stop and have a conversation."}
 ];
+
+function policyChipsHtml(ids){
+  if(!ids || !ids.length) return '';
+  const chips = ids.map(id=>{
+    const p = POLICIES[id]; if(!p) return '';
+    return `<a class="policy-chip" href="${esc(p.url)}" target="_blank" rel="noopener" title="${esc(p.note)}">${esc(p.tag)}</a>`;
+  }).join('');
+  return `<div class="policy-line"><span class="policy-lbl">NOCCCD policy</span>${chips}</div>`;
+}
+function policyGapHtml(note){
+  if(!note) return '';
+  return `<div class="policy-line policy-gap"><span class="policy-lbl">NOCCCD policy</span><span class="policy-gap-note">△ Not yet covered by adopted District policy — ${esc(note)}</span></div>`;
+}
+function policyBlockFor(q){
+  if(q.policyGap) return policyGapHtml(q.policyGap);
+  if(q.policy) return policyChipsHtml(q.policy);
+  return '';
+}
+const GENERAL_POLICIES = ["bp6340","ap3300"]; // apply to every review regardless of rubric answers
+function renderPolicySummary(){
+  const used = new Set(GENERAL_POLICIES);
+  RUBRIC.forEach(sec=>{ if(sec.profile) return; sec.questions.forEach(q=>{ (q.policy||[]).forEach(id=>used.add(id)); }); });
+  const rows = [...used].map(id=>{
+    const p = POLICIES[id]; if(!p) return '';
+    return `<li><div class="ptag">${esc(p.tag)}</div><div class="ptitle">${esc(p.title)}</div><div class="pnote">${p.note} — <a href="${esc(p.url)}" target="_blank" rel="noopener">Read the policy ↗</a></div></li>`;
+  }).join('');
+  return `<ul class="policy-summary">${rows}
+    <li><div class="ptag">Note</div><div class="pnote" style="font-style:italic">${esc(AI_POLICY_GAP)}</div></li>
+  </ul>
+  <p style="font-size:13px;color:var(--ink-faint);margin-top:10px;line-height:1.5">Policy citations reflect the NOCCCD Board Policy / Administrative Procedure manual as published at nocccd.edu at the time of this review. They point a reviewer to the relevant District policy — they are not a legal compliance determination. Verify current policy text before formal submission to the District Information Security Office.</p>`;
+}
 
 /* ---------- state & storage ---------- */
 const LS_KEY = "signal_assessments_v1";
@@ -776,6 +864,7 @@ function buildForm(){
             <span class="wt ${q.critical?'crit':''}">${q.critical?'★ Critical':'Weighted'}</span>
           </div>
           <div class="explain">${q.explain}</div>
+          ${policyBlockFor(q)}
           <div class="opts">`;
         q.opts.forEach((o,i)=>{
           const oid = q.id+"_"+i;
@@ -964,12 +1053,16 @@ function findingLi(q, v, note, kind){
     <div class="finding-q">${esc(q.text)}${q.critical?'<span class="crit">★ Critical</span>':''}</div>
     <div class="finding-a"><span>Answer:</span><span class="chip ${chipClass}">${esc(chipLabel)}</span></div>
     ${evidenceHtml}
+    ${policyBlockFor(q)}
   </li>`;
 }
 
 function renderReport(a){
+  document.getElementById('report-host').innerHTML = buildReportHtml(a);
+  renderReportActions();
+}
+function buildReportHtml(a){
   const s=scoreOf(a);
-  const host=document.getElementById('report-host');
   const dt=new Date(a.finalized||Date.now()).toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
 
   // findings — each item carries its question, chosen answer chip, and evidence + source
@@ -1012,7 +1105,7 @@ function renderReport(a){
     </div>`;
   }).join('');
 
-  host.innerHTML = `
+  return `
   <div class="rpt-head">
     <div class="org">North Orange County Community College District · Third-Party AI &amp; Vendor Risk Assessment</div>
     <h1>${esc(a.name)||'Untitled tool'}</h1>
@@ -1040,6 +1133,9 @@ function renderReport(a){
     <div class="rpt-section-title">CISO documentation checklist</div>
     <table class="reqs-table">${reqRows}</table>
 
+    <div class="rpt-section-title">NOCCCD Board Policy / Administrative Procedure alignment</div>
+    ${renderPolicySummary()}
+
     ${flagsLi.length?`<div class="rpt-section-title">⚑ Red flags &amp; gaps to resolve</div><ul class="findings">${flagsLi.join('')}</ul>`:''}
     ${warnsLi.length?`<div class="rpt-section-title">△ Conditions &amp; items to confirm</div><ul class="findings">${warnsLi.join('')}</ul>`:''}
     ${oksLi.length?`<div class="rpt-section-title">✓ Controls in good standing</div><ul class="findings">${oksLi.join('')}</ul>`:''}
@@ -1047,7 +1143,6 @@ function renderReport(a){
   <div class="rpt-foot">
     Generated by Signal · a self-service pre-screen aligned to the EDUCAUSE HECVAT 4 framework. This report supports, but does not replace, formal review by the District Information Security Office. Verdict logic: a missing critical control (★) caps the rating at RED; an unconfirmed critical control caps it at YELLOW. Weighted score is the importance-weighted average across answered categories.
   </div>`;
-  renderReportActions();
 }
 
 /* ---------- library ---------- */
@@ -1445,6 +1540,7 @@ function renderReportActions(){
   const sharedBtns = `
       <button class="btn sm" onclick="makeCopyFromShared()">+ Make a copy in my library</button>
       <button class="btn sm ghost" onclick="openVendorEmail()">✉ Draft vendor follow-up</button>
+      <button class="btn sm ghost" onclick="exportStandaloneReport()">⤓ Export shareable page</button>
       <button class="btn sm ghost" onclick="copyReportMarkdown()">⤓ Copy as Markdown</button>
       <button class="btn sm ghost" onclick="exportJSON()">⤓ Export JSON</button>
       <button class="btn sm ghost" onclick="window.print()">⎙ Print / Save PDF</button>`;
@@ -1452,6 +1548,7 @@ function renderReportActions(){
       <button class="btn sm ghost" onclick="editCurrent()">‹ Edit answers</button>
       <button class="btn sm ghost" onclick="openVendorEmail()">✉ Draft vendor follow-up</button>
       <button class="btn sm ghost" onclick="copyShareLink(null)">🔗 Copy share link</button>
+      <button class="btn sm ghost" onclick="exportStandaloneReport()">⤓ Export shareable page</button>
       <button class="btn sm ghost" onclick="copyReportMarkdown()">⤓ Copy as Markdown</button>
       <button class="btn sm ghost" onclick="exportJSON()">⤓ Export JSON</button>
       <button class="btn sm" onclick="window.print()">⎙ Print / Save PDF</button>`;
@@ -1492,6 +1589,24 @@ function mdFindingBlock(q, v, note){
       }
     });
   }
+  if(q.policyGap){
+    out += `_△ NOCCCD policy: not yet covered by adopted District policy — ${q.policyGap}_\n\n`;
+  } else if(q.policy && q.policy.length){
+    const tags = q.policy.map(id=>{ const p=POLICIES[id]; return p?`[${p.tag}](${p.url})`:''; }).join(', ');
+    out += `_NOCCCD policy: ${tags}_\n\n`;
+  }
+  return out;
+}
+function mdPolicySummary(){
+  const used = new Set(GENERAL_POLICIES);
+  RUBRIC.forEach(sec=>{ if(sec.profile) return; sec.questions.forEach(q=>{ (q.policy||[]).forEach(id=>used.add(id)); }); });
+  let out = '## NOCCCD Board Policy / Administrative Procedure alignment\n\n';
+  [...used].forEach(id=>{
+    const p=POLICIES[id]; if(!p) return;
+    out += `- **[${p.tag}](${p.url})** — ${p.title}. ${p.note}\n`;
+  });
+  out += `\n> ${AI_POLICY_GAP}\n\n`;
+  out += `_Policy citations reflect the NOCCCD Board Policy / Administrative Procedure manual as published at nocccd.edu at the time of this review. They point a reviewer to the relevant District policy — they are not a legal compliance determination._\n\n`;
   return out;
 }
 function buildReportMarkdown(a){
@@ -1552,6 +1667,7 @@ function buildReportMarkdown(a){
     lines.push(`| ${mark} | ${mdEsc(label)} | ${word} |`);
   });
   lines.push('');
+  lines.push(mdPolicySummary());
   // findings
   const flagsArr=[], warnsArr=[], oksArr=[];
   RUBRIC.forEach(sec=>{ if(sec.profile) return; sec.questions.forEach(q=>{
@@ -1585,6 +1701,117 @@ function copyReportMarkdown(){
   if(!current){ toast('No report to copy'); return; }
   const md = buildReportMarkdown(current);
   copyToClipboard(md, 'Markdown copied — paste into Confluence or SharePoint');
+}
+
+/* ---------- standalone report export (durable, no localStorage/URL-size dependency) ----------
+   Produces a fully self-contained .html file — the rendered report markup plus the CSS it
+   needs, nothing else. Drop it in /reports/<slug>.html and commit it: it's a normal static
+   page anyone can open or you can publish on GitHub Pages, unlike a share link (which depends
+   on the URL fragment staying intact) or the library (which lives only in one browser). */
+function standaloneReportCss(){
+  return `
+  :root{--paper:#f4f1ea;--paper-2:#ece7db;--ink:#1c1a17;--ink-soft:#4a463f;--ink-faint:#7c766b;--line:#d8d2c4;--line-strong:#c4bdac;--red:#b8392f;--red-bg:#f6e2df;--yellow:#b07d12;--yellow-bg:#f6eccf;--green:#3a7d44;--green-bg:#dfeede;--shadow:0 1px 0 rgba(0,0,0,.04),0 12px 30px -18px rgba(28,26,23,.4);--radius:3px}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--paper);color:var(--ink);font-family:'Newsreader',Georgia,serif;font-size:18px;line-height:1.5;-webkit-font-smoothing:antialiased;padding:40px 20px 70px}
+  .wrap{max-width:850px;margin:0 auto}
+  .report{background:#fff;border:1px solid var(--line-strong);border-radius:var(--radius);box-shadow:var(--shadow)}
+  .rpt-head{padding:42px 50px 30px;border-bottom:3px double var(--ink)}
+  .rpt-head .org{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-faint)}
+  .rpt-head h1{font-family:'Fraunces',serif;font-weight:900;font-size:40px;letter-spacing:-.02em;margin:10px 0 4px;line-height:1}
+  .rpt-head .vendor{font-size:19px;font-style:italic;color:var(--ink-soft)}
+  .rpt-verdict{display:flex;align-items:center;gap:24px;margin-top:26px;padding:22px;border-radius:var(--radius);flex-wrap:wrap}
+  .rpt-verdict.GREEN{background:var(--green-bg)}.rpt-verdict.YELLOW{background:var(--yellow-bg)}.rpt-verdict.RED{background:var(--red-bg)}
+  .rpt-verdict .big{width:70px;height:70px;border-radius:50%;flex-shrink:0}
+  .rpt-verdict.GREEN .big{background:var(--green)}.rpt-verdict.YELLOW .big{background:var(--yellow)}.rpt-verdict.RED .big{background:var(--red)}
+  .rpt-verdict .vtext .vlabel{font-family:'Fraunces',serif;font-weight:900;font-size:30px;line-height:1}
+  .rpt-verdict.GREEN .vlabel{color:var(--green)}.rpt-verdict.YELLOW .vlabel{color:var(--yellow)}.rpt-verdict.RED .vlabel{color:var(--red)}
+  .rpt-verdict .vsum{font-size:16px;color:var(--ink-soft);margin-top:6px;max-width:55ch;line-height:1.45}
+  .rpt-verdict .vscore{margin-left:auto;text-align:right;font-family:'IBM Plex Mono',monospace}
+  .rpt-verdict .vscore b{font-size:38px;font-family:'Fraunces',serif;font-weight:700}
+  .rpt-verdict .vscore span{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-faint);display:block}
+  .rpt-body{padding:34px 50px 46px}
+  .rpt-meta{display:grid;grid-template-columns:repeat(2,1fr);gap:14px 30px;margin-bottom:30px;font-size:15px}
+  .rpt-meta .m label{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-faint);display:block}
+  .rpt-meta .m span{color:var(--ink)}
+  .rpt-section-title{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-faint);border-bottom:1px solid var(--line);padding-bottom:8px;margin:30px 0 16px}
+  .cat-row{display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid var(--line)}
+  .cat-row .cname{flex:1;font-weight:500}
+  .cat-row .cname small{display:block;font-size:13px;color:var(--ink-faint);font-style:italic;font-weight:400}
+  .bar{width:160px;height:9px;background:var(--paper-2);border-radius:100px;overflow:hidden}
+  .bar i{display:block;height:100%;border-radius:100px}
+  .bar i.GREEN{background:var(--green)}.bar i.YELLOW{background:var(--yellow)}.bar i.RED{background:var(--red)}
+  .cat-row .cpct{font-family:'IBM Plex Mono',monospace;font-size:13px;width:42px;text-align:right;color:var(--ink-soft)}
+  .findings{list-style:none;padding:0;margin-top:6px}
+  .findings li{margin:0 0 12px;padding:14px 16px 14px 18px;background:#fff;border:1px solid var(--line);border-radius:var(--radius);border-left:4px solid var(--line-strong)}
+  .findings li.flag{border-left-color:var(--red)}
+  .findings li.warn{border-left-color:var(--yellow)}
+  .findings li.ok{border-left-color:var(--green)}
+  .finding-q{font-weight:500;color:var(--ink);font-size:15.5px;line-height:1.4}
+  .finding-q .crit{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.08em;color:var(--red);background:var(--red-bg);padding:2px 8px;border-radius:100px;margin-left:8px;text-transform:uppercase;font-weight:600;vertical-align:middle}
+  .finding-a{margin-top:8px;font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.06em;color:var(--ink-faint);text-transform:uppercase;display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+  .finding-a .chip{padding:3px 11px;border-radius:100px;font-weight:600;font-size:11px;letter-spacing:.02em;text-transform:none;font-family:'Newsreader',serif}
+  .finding-a .chip.red{background:var(--red-bg);color:var(--red)}
+  .finding-a .chip.yel{background:var(--yellow-bg);color:var(--yellow)}
+  .finding-a .chip.grn{background:var(--green-bg);color:var(--green)}
+  .finding-a .chip.unk{background:var(--paper-2);color:var(--ink-faint);font-style:italic}
+  .finding-ev{margin-top:10px;font-size:14.5px;color:var(--ink-soft);font-style:italic;line-height:1.5;padding:8px 0 0 12px;border-left:2px solid var(--line)}
+  .finding-ev .src{display:block;margin-top:4px;font-style:normal;color:var(--ink-faint);font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:.02em;word-break:break-all}
+  .finding-ev .src a{color:var(--ink);text-decoration:underline}
+  .reqs-table{width:100%;border-collapse:collapse;margin-top:8px;font-size:15px}
+  .reqs-table td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  .reqs-table td:first-child{width:30px}
+  .reqs-table .st{font-family:'IBM Plex Mono',monospace;font-size:15px}
+  .reqs-table .st.y{color:var(--green)}.reqs-table .st.n{color:var(--red)}.reqs-table .st.p{color:var(--yellow)}
+  .policy-line{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.05em;text-transform:uppercase;margin:0 0 14px}
+  .policy-lbl{color:var(--ink-faint)}
+  .policy-chip{display:inline-flex;align-items:center;background:var(--paper);border:1px solid var(--line-strong);color:var(--ink);text-decoration:none;padding:4px 10px;border-radius:100px}
+  .policy-line.policy-gap{align-items:flex-start}
+  .policy-gap-note{font-family:'Newsreader',serif;font-size:14.5px;letter-spacing:normal;text-transform:none;font-style:italic;color:var(--yellow);line-height:1.4;flex:1;min-width:200px}
+  .policy-summary{list-style:none;padding:0;margin:8px 0 0}
+  .policy-summary li{padding:12px 0;border-bottom:1px dashed var(--line)}
+  .policy-summary li:last-child{border-bottom:none}
+  .policy-summary .ptag{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.05em;color:var(--ink);font-weight:600}
+  .policy-summary .ptitle{font-family:'Fraunces',serif;font-size:16px;font-weight:600;margin:2px 0 4px}
+  .policy-summary .pnote{font-size:14.5px;color:var(--ink-soft);line-height:1.45}
+  .policy-summary a{color:var(--ink)}
+  .rpt-foot{padding:24px 50px 36px;border-top:1px solid var(--line);font-size:13px;color:var(--ink-faint);line-height:1.5}
+  .exp-foot{max-width:850px;margin:22px auto 0;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-faint);letter-spacing:.04em}
+  .exp-foot a{color:var(--ink)}
+  @media print{ body{background:#fff;padding:0} .report{border:none;box-shadow:none} .exp-foot{display:none} @page{margin:1.4cm} }
+  @media(max-width:880px){ .rpt-head,.rpt-body,.rpt-foot{padding-left:26px;padding-right:26px} .rpt-meta{grid-template-columns:1fr} }
+  `;
+}
+function buildStandaloneReportHtml(a){
+  const title = `${a.name||'Untitled tool'} — Signal Report`;
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${esc(title)}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700;9..144,900&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>${standaloneReportCss()}</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="report">${buildReportHtml(a)}</div>
+  <div class="exp-foot">Exported from <a href="https://github.com/profgarygraves/signal-vetting" target="_blank" rel="noopener">Signal</a> — a self-service HECVAT-aligned pre-screen. This is a static snapshot; it does not update if the source review changes.</div>
+</div>
+</body>
+</html>`;
+}
+function slugify(s){ return (s||'untitled').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'')||'untitled'; }
+function exportStandaloneReport(){
+  if(!current){ toast('No report to export'); return; }
+  const html = buildStandaloneReportHtml(current);
+  const blob = new Blob([html], {type:'text/html'});
+  const url = URL.createObjectURL(blob);
+  const el = document.createElement('a');
+  el.href = url; el.download = slugify(current.name)+'-signal-report.html'; el.click();
+  URL.revokeObjectURL(url);
+  toast('Standalone report page downloaded — commit it to /reports/ to publish a stable link');
 }
 
 /* ---------- boot (handles #share=...) ---------- */

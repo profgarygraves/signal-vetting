@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Superhuman — Signal Report</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700;9..144,900&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{--paper:#f4f1ea;--paper-2:#ece7db;--ink:#1c1a17;--ink-soft:#4a463f;--ink-faint:#7c766b;--line:#d8d2c4;--line-strong:#c4bdac;--red:#b8392f;--red-bg:#f6e2df;--yellow:#b07d12;--yellow-bg:#f6eccf;--green:#3a7d44;--green-bg:#dfeede;--shadow:0 1px 0 rgba(0,0,0,.04),0 12px 30px -18px rgba(28,26,23,.4);--radius:3px}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--paper);color:var(--ink);font-family:'Newsreader',Georgia,serif;font-size:18px;line-height:1.5;-webkit-font-smoothing:antialiased;padding:40px 20px 70px}
+  .wrap{max-width:850px;margin:0 auto}
+  .report{background:#fff;border:1px solid var(--line-strong);border-radius:var(--radius);box-shadow:var(--shadow)}
+  .rpt-head{padding:42px 50px 30px;border-bottom:3px double var(--ink)}
+  .rpt-head .org{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-faint)}
+  .rpt-head h1{font-family:'Fraunces',serif;font-weight:900;font-size:40px;letter-spacing:-.02em;margin:10px 0 4px;line-height:1}
+  .rpt-head .vendor{font-size:19px;font-style:italic;color:var(--ink-soft)}
+  .rpt-verdict{display:flex;align-items:center;gap:24px;margin-top:26px;padding:22px;border-radius:var(--radius);flex-wrap:wrap}
+  .rpt-verdict.GREEN{background:var(--green-bg)}.rpt-verdict.YELLOW{background:var(--yellow-bg)}.rpt-verdict.RED{background:var(--red-bg)}
+  .rpt-verdict .big{width:70px;height:70px;border-radius:50%;flex-shrink:0}
+  .rpt-verdict.GREEN .big{background:var(--green)}.rpt-verdict.YELLOW .big{background:var(--yellow)}.rpt-verdict.RED .big{background:var(--red)}
+  .rpt-verdict .vtext .vlabel{font-family:'Fraunces',serif;font-weight:900;font-size:30px;line-height:1}
+  .rpt-verdict.GREEN .vlabel{color:var(--green)}.rpt-verdict.YELLOW .vlabel{color:var(--yellow)}.rpt-verdict.RED .vlabel{color:var(--red)}
+  .rpt-verdict .vsum{font-size:16px;color:var(--ink-soft);margin-top:6px;max-width:55ch;line-height:1.45}
+  .rpt-verdict .vscore{margin-left:auto;text-align:right;font-family:'IBM Plex Mono',monospace}
+  .rpt-verdict .vscore b{font-size:38px;font-family:'Fraunces',serif;font-weight:700}
+  .rpt-verdict .vscore span{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-faint);display:block}
+  .rpt-body{padding:34px 50px 46px}
+  .rpt-meta{display:grid;grid-template-columns:repeat(2,1fr);gap:14px 30px;margin-bottom:30px;font-size:15px}
+  .rpt-meta .m label{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-faint);display:block}
+  .rpt-meta .m span{color:var(--ink)}
+  .rpt-section-title{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-faint);border-bottom:1px solid var(--line);padding-bottom:8px;margin:30px 0 16px}
+  .cat-row{display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid var(--line)}
+  .cat-row .cname{flex:1;font-weight:500}
+  .cat-row .cname small{display:block;font-size:13px;color:var(--ink-faint);font-style:italic;font-weight:400}
+  .bar{width:160px;height:9px;background:var(--paper-2);border-radius:100px;overflow:hidden}
+  .bar i{display:block;height:100%;border-radius:100px}
+  .bar i.GREEN{background:var(--green)}.bar i.YELLOW{background:var(--yellow)}.bar i.RED{background:var(--red)}
+  .cat-row .cpct{font-family:'IBM Plex Mono',monospace;font-size:13px;width:42px;text-align:right;color:var(--ink-soft)}
+  .findings{list-style:none;padding:0;margin-top:6px}
+  .findings li{margin:0 0 12px;padding:14px 16px 14px 18px;background:#fff;border:1px solid var(--line);border-radius:var(--radius);border-left:4px solid var(--line-strong)}
+  .findings li.flag{border-left-color:var(--red)}
+  .findings li.warn{border-left-color:var(--yellow)}
+  .findings li.ok{border-left-color:var(--green)}
+  .finding-q{font-weight:500;color:var(--ink);font-size:15.5px;line-height:1.4}
+  .finding-q .crit{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.08em;color:var(--red);background:var(--red-bg);padding:2px 8px;border-radius:100px;margin-left:8px;text-transform:uppercase;font-weight:600;vertical-align:middle}
+  .finding-a{margin-top:8px;font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.06em;color:var(--ink-faint);text-transform:uppercase;display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+  .finding-a .chip{padding:3px 11px;border-radius:100px;font-weight:600;font-size:11px;letter-spacing:.02em;text-transform:none;font-family:'Newsreader',serif}
+  .finding-a .chip.red{background:var(--red-bg);color:var(--red)}
+  .finding-a .chip.yel{background:var(--yellow-bg);color:var(--yellow)}
+  .finding-a .chip.grn{background:var(--green-bg);color:var(--green)}
+  .finding-a .chip.unk{background:var(--paper-2);color:var(--ink-faint);font-style:italic}
+  .finding-ev{margin-top:10px;font-size:14.5px;color:var(--ink-soft);font-style:italic;line-height:1.5;padding:8px 0 0 12px;border-left:2px solid var(--line)}
+  .finding-ev .src{display:block;margin-top:4px;font-style:normal;color:var(--ink-faint);font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:.02em;word-break:break-all}
+  .finding-ev .src a{color:var(--ink);text-decoration:underline}
+  .reqs-table{width:100%;border-collapse:collapse;margin-top:8px;font-size:15px}
+  .reqs-table td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  .reqs-table td:first-child{width:30px}
+  .reqs-table .st{font-family:'IBM Plex Mono',monospace;font-size:15px}
+  .reqs-table .st.y{color:var(--green)}.reqs-table .st.n{color:var(--red)}.reqs-table .st.p{color:var(--yellow)}
+  .policy-line{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.05em;text-transform:uppercase;margin:0 0 14px}
+  .policy-lbl{color:var(--ink-faint)}
+  .policy-chip{display:inline-flex;align-items:center;background:var(--paper);border:1px solid var(--line-strong);color:var(--ink);text-decoration:none;padding:4px 10px;border-radius:100px}
+  .policy-line.policy-gap{align-items:flex-start}
+  .policy-gap-note{font-family:'Newsreader',serif;font-size:14.5px;letter-spacing:normal;text-transform:none;font-style:italic;color:var(--yellow);line-height:1.4;flex:1;min-width:200px}
+  .policy-summary{list-style:none;padding:0;margin:8px 0 0}
+  .policy-summary li{padding:12px 0;border-bottom:1px dashed var(--line)}
+  .policy-summary li:last-child{border-bottom:none}
+  .policy-summary .ptag{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.05em;color:var(--ink);font-weight:600}
+  .policy-summary .ptitle{font-family:'Fraunces',serif;font-size:16px;font-weight:600;margin:2px 0 4px}
+  .policy-summary .pnote{font-size:14.5px;color:var(--ink-soft);line-height:1.45}
+  .policy-summary a{color:var(--ink)}
+  .rpt-foot{padding:24px 50px 36px;border-top:1px solid var(--line);font-size:13px;color:var(--ink-faint);line-height:1.5}
+  .exp-foot{max-width:850px;margin:22px auto 0;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-faint);letter-spacing:.04em}
+  .exp-foot a{color:var(--ink)}
+  @media print{ body{background:#fff;padding:0} .report{border:none;box-shadow:none} .exp-foot{display:none} @page{margin:1.4cm} }
+  @media(max-width:880px){ .rpt-head,.rpt-body,.rpt-foot{padding-left:26px;padding-right:26px} .rpt-meta{grid-template-columns:1fr} }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="report">
+  <div class="rpt-head">
+    <div class="org">North Orange County Community College District · Third-Party AI &amp; Vendor Risk Assessment</div>
+    <h1>Superhuman</h1>
+    <div class="vendor">Superhuman Labs, Inc. (a Grammarly company) · https://trust.superhuman.com</div>
+    <div class="rpt-verdict RED">
+      <div class="big"></div>
+      <div class="vtext">
+        <div class="vlabel">RED — Hold for Remediation</div>
+        <div class="vsum">One or more critical controls are missing or unacceptable. Do not approve for institutional use until the red-flagged items are remediated, or consider an alternative tool.</div>
+      </div>
+      <div class="vscore"><b>69</b><span>Weighted score</span></div>
+    </div>
+  </div>
+  <div class="rpt-body">
+    <div class="rpt-meta">
+      <div class="m"><label>Purpose</label><span>AI-powered email client layered on Gmail / Microsoft 365 — AI-assisted drafting, triage, and inbox management (Ask AI, Instant Reply, Auto Summarize, Write with AI).</span></div>
+      <div class="m"><label>Data in scope</label><span>Faculty/staff email content, calendar, and contacts from an individual Gmail or Microsoft 365 mailbox, connected per user. No student information system (SIS) access.</span></div>
+      <div class="m"><label>Requested by</label><span>Gary Graves — Fullerton College</span></div>
+      <div class="m"><label>Assessment date</label><span>July 3, 2025</span></div>
+    </div>
+
+    <div class="rpt-section-title">Category scores (HECVAT 4 domains)</div>
+    <div class="cat-row">
+      <div class="cname">Company & governance<small>3/3 answered · weight ×1</small></div>
+      <div class="bar"><i class="GREEN" style="width:83%"></i></div>
+      <div class="cpct">83</div>
+    </div><div class="cat-row">
+      <div class="cname">Data protection & encryption<small>3/3 answered · weight ×1.2</small></div>
+      <div class="bar"><i class="YELLOW" style="width:67%"></i></div>
+      <div class="cpct">67</div>
+    </div><div class="cat-row">
+      <div class="cname">AI / ML practices<small>3/3 answered · weight ×1.4</small></div>
+      <div class="bar"><i class="YELLOW" style="width:67%"></i></div>
+      <div class="cpct">67</div>
+    </div><div class="cat-row">
+      <div class="cname">Privacy & data lifecycle<small>3/3 answered · weight ×1.1</small></div>
+      <div class="bar"><i class="YELLOW" style="width:67%"></i></div>
+      <div class="cpct">67</div>
+    </div><div class="cat-row">
+      <div class="cname">Integration & access scope<small>2/3 answered · weight ×1.2</small></div>
+      <div class="bar"><i class="YELLOW" style="width:75%"></i></div>
+      <div class="cpct">75</div>
+    </div><div class="cat-row">
+      <div class="cname">Operations & resilience<small>2/2 answered · weight ×0.8</small></div>
+      <div class="bar"><i class="RED" style="width:50%"></i></div>
+      <div class="cpct">50</div>
+    </div>
+
+    <div class="rpt-section-title">CISO documentation checklist</div>
+    <table class="reqs-table"><tr><td class="st y">●</td><td>SOC 2 Type II report</td><td style="color:var(--ink-faint)">Provided / confirmed</td></tr><tr><td class="st n">○</td><td>Data flow diagram</td><td style="color:var(--ink-faint)">Missing</td></tr><tr><td class="st p">◐</td><td>AI data-handling / no-training confirmation</td><td style="color:var(--ink-faint)">Partial / unclear</td></tr><tr><td class="st y">●</td><td>List of sub-processors</td><td style="color:var(--ink-faint)">Provided / confirmed</td></tr><tr><td class="st y">●</td><td>Encryption & access-control details</td><td style="color:var(--ink-faint)">Provided / confirmed</td></tr><tr><td class="st y">●</td><td>Data retention & deletion policy</td><td style="color:var(--ink-faint)">Provided / confirmed</td></tr><tr><td class="st p">◐</td><td>OAuth permissions for Microsoft 365</td><td style="color:var(--ink-faint)">Partial / unclear</td></tr><tr><td class="st p">◐</td><td>Customer data not used for model training</td><td style="color:var(--ink-faint)">Partial / unclear</td></tr></table>
+
+    <div class="rpt-section-title">NOCCCD Board Policy / Administrative Procedure alignment</div>
+    <ul class="policy-summary"><li><div class="ptag">BP 6340</div><div class="ptitle">Bids and Contracts</div><div class="pnote">Vendor contracts above the Public Contract Code threshold require Board ratification before they're enforceable; sets the lowest-responsive-bidder rule and delegates contracting authority. — <a href="https://www.nocccd.edu/documents/bp-6340-bids-and-contractspdf" target="_blank" rel="noopener">Read the policy ↗</a></div></li><li><div class="ptag">AP 3300</div><div class="ptitle">Public Records</div><div class="pnote">§5.11–5.12 exempt information-security records and vendor-identifying codes from public disclosure — relevant to how a completed assessment like this one should itself be handled. — <a href="https://www.nocccd.edu/documents/ap-3300-public-records" target="_blank" rel="noopener">Read the policy ↗</a></div></li><li><div class="ptag">AP 3720</div><div class="ptitle">Computer and Electronic Communication Systems</div><div class="pnote">§6.0 requires a written information-security program, including annual risk assessments, and requires the District to “select and retain service providers capable of maintaining appropriate safeguards” and bind them by contract to do so. — <a href="https://www.nocccd.edu/documents/ap-3720-computer-and-electronic-communication-systems" target="_blank" rel="noopener">Read the policy ↗</a></div></li><li><div class="ptag">AP 3722</div><div class="ptitle">District Data Security Standards for End Users</div><div class="pnote">§9.0 requires any third party accessing District data to sign a Confidentiality &amp; Nondisclosure Agreement, and requires a Data-Sharing Agreement approved by the VC of Educational Services &amp; Technology before any data is shared. — <a href="https://www.nocccd.edu/documents/ap-3722-district-data-security-standards-end-users" target="_blank" rel="noopener">Read the policy ↗</a></div></li><li><div class="ptag">BP/AP 3310</div><div class="ptitle">Records Retention and Destruction</div><div class="pnote">Sets Title 5-based retention classes (Permanent / Optional / minimum 3-year Disposable) covering District records, including electronically stored information. — <a href="https://www.nocccd.edu/documents/bp-3310-records-retention-and-destruction" target="_blank" rel="noopener">Read the policy ↗</a></div></li><li><div class="ptag">BP/AP 5040</div><div class="ptitle">Student Records, Directory Information, and Privacy</div><div class="pnote">NOCCCD's FERPA policy — prohibits disclosure of student personally identifiable information without written consent, apart from narrow directory-information or legal exceptions. — <a href="https://www.nocccd.edu/documents/bp-5040-student-records-directory-information-and-privacy" target="_blank" rel="noopener">Read the policy ↗</a></div></li>
+    <li><div class="ptag">Note</div><div class="pnote" style="font-style:italic">NOCCCD has not yet adopted a numbered AI-specific Board Policy (a District AI policy was in first-read/discussion with academic senates Nov 2025–Mar 2026, not finalized as of this review). The nearest applicable requirement is AP 3722 §9.0's data-sharing agreement mandate — confirm this item in writing with the vendor and route through that process until a dedicated AI policy is adopted.</div></li>
+  </ul>
+  <p style="font-size:13px;color:var(--ink-faint);margin-top:10px;line-height:1.5">Policy citations reflect the NOCCCD Board Policy / Administrative Procedure manual as published at nocccd.edu at the time of this review. They point a reviewer to the relevant District policy — they are not a legal compliance determination. Verify current policy text before formal submission to the District Information Security Office.</p>
+
+    <div class="rpt-section-title">⚑ Red flags &amp; gaps to resolve</div><ul class="findings"><li class="flag">
+    <div class="finding-q">Can the vendor provide a data flow diagram (what data goes where)?</div>
+    <div class="finding-a"><span>Answer:</span><span class="chip red">No</span></div>
+    <div class="finding-ev"><div>No public data-flow diagram located on the Trust Center, superhuman.com, or help docs as of this review — request one directly from the vendor.<span class="src">Source: <a href="https://trust.superhuman.com/" target="_blank" rel="noopener">https://trust.superhuman.com/</a></span></div></div>
+    <div class="policy-line"><span class="policy-lbl">NOCCCD policy</span><a class="policy-chip" href="https://www.nocccd.edu/documents/ap-3722-district-data-security-standards-end-users" target="_blank" rel="noopener" title="§9.0 requires any third party accessing District data to sign a Confidentiality &amp;amp; Nondisclosure Agreement, and requires a Data-Sharing Agreement approved by the VC of Educational Services &amp;amp; Technology before any data is shared.">AP 3722</a></div>
+  </li><li class="flag">
+    <div class="finding-q">What is the connection scope to institutional systems?<span class="crit">★ Critical</span></div>
+    <div class="finding-a"><span>Answer:</span><span class="chip unk">Unanswered — open gap</span></div>
+    <div class="finding-ev"><div>Sign-in is per individual Google/Microsoft account (not an org-wide admin consent grant), and Google Workspace admins can block the app entirely at the domain level — but no public documentation explicitly confirms whether Superhuman ever requests Google domain-wide delegation or Microsoft tenant-wide app permissions rather than single-mailbox access. Left unanswered deliberately: confirm the exact connection scope directly with the vendor and district IT before approving anything broader than single-mailbox use.<span class="src">Source: <a href="https://help.superhuman.com/" target="_blank" rel="noopener">https://help.superhuman.com/</a></span></div></div>
+    <div class="policy-line"><span class="policy-lbl">NOCCCD policy</span><a class="policy-chip" href="https://www.nocccd.edu/documents/ap-3720-computer-and-electronic-communication-systems" target="_blank" rel="noopener" title="§6.0 requires a written information-security program, including annual risk assessments, and requires the District to “select and retain service providers capable of maintaining appropriate safeguards” and bind them by contract to do so.">AP 3720</a><a class="policy-chip" href="https://www.nocccd.edu/documents/ap-3722-district-data-security-standards-end-users" target="_blank" rel="noopener" title="§9.0 requires any third party accessing District data to sign a Confidentiality &amp;amp; Nondisclosure Agreement, and requires a Data-Sharing Agreement approved by the VC of Educational Services &amp;amp; Technology before any data is shared.">AP 3722</a></div>
+  </li></ul>
+    <div class="rpt-section-title">△ Conditions &amp; items to confirm</div><ul class="findings"><li class="warn">
+    <div class="finding-q">Has the vendor had a recent third-party penetration test?</div>
+    <div class="finding-a"><span>Answer:</span><span class="chip yel">Older / summary only</span></div>
+    <div class="finding-ev"><div>States infrastructure undergoes &quot;annual third-party penetration testing,&quot; and a Pentest Report is listed as a downloadable Trust Center artifact — but the report is gated and its exact test date wasn't independently confirmable from public sources.<span class="src">Source: <a href="https://trust.superhuman.com/" target="_blank" rel="noopener">https://trust.superhuman.com/</a></span></div></div>
+    <div class="policy-line"><span class="policy-lbl">NOCCCD policy</span><a class="policy-chip" href="https://www.nocccd.edu/documents/ap-3720-computer-and-electronic-communication-systems" target="_blank" rel="noopener" title="§6.0 requires a written information-security program, including annual risk assessments, and requires the District to “select and retain service providers capable of maintaining appropriate safeguards” and bind them by contract to do so.">AP 3720</a></div>
+  </li><li class="warn">
+    <div class="finding-q">Does the vendor enforce least-privilege access and MFA for its own staff?</div>
+    <div class="finding-a"><span>Answer:</span><span class="chip yel">Partial / informal</span></div>
+    <div class="finding-ev"><div>States &quot;we use the principle of least privilege: services and users are granted the minimal set of permissions required to do their job.&quot; MFA is listed as a Trust Center product-security feature, but no explicit public statement confirms mandatory MFA for Superhuman's own employees specifically — ask the vendor to confirm directly.<span class="src">Source: <a href="https://blog.superhuman.com/superhuman-soc-2-compliant-data-privacy/" target="_blank" rel="noopener">https://blog.superhuman.com/superhuman-soc-2-compliant-data-privacy/</a></span></div></div>
+    <div class="policy-line"><span class="policy-lbl">NOCCCD policy</span><a class="policy-chip" href="https://www.nocccd.edu/documents/ap-3720-computer-and-electronic-communication-systems" target="_blank" rel="noopener" title="§6.0 requires a written information-security program, including annual risk assessments, and requires the District to “select and retain service providers capable of maintaining appropriate safeguards” and bind them by contract to do so.">AP 3720</a></div>
+  </li><li class="warn">
+    <div class="finding-q">Is data stored with a reputable cloud provider in a known region?</div>
+    <div class="finding-a"><span>Answer:</span><span class="chip yel">Unclear region</span></div>
+    <div class="finding-ev"><div>Public sources conflict: the company blog states infrastructure &quot;runs fully on infrastructure managed by Google [Cloud]&quot;, while the Trust Center's own sub-processor list separately lists AWS for &quot;data hosting and product infrastructure.&quot; Both are reputable US providers, but the discrepancy and the lack of a disclosed region should be clarified directly with the vendor before approval.<span class="src">Source: <a href="https://superhuman.com/legal/subprocessors" target="_blank" rel="noopener">https://superhuman.com/legal/subprocessors</a></span></div></div>
+    <div class="policy-line"><span class="policy-lbl">NOCCCD policy</span><a class="policy-chip" href="https://www.nocccd.edu/documents/ap-3722-district-data-security-standards-end-users" target="_blank" rel="noopener" title="§9.0 requires any third party accessing District data to sign a Confidentiality &amp;amp; Nondisclosure Agreement, and requires a Data-Sharing Agreement approved by the VC of Educational Services &amp;amp; Technology before any data is shared.">AP 3722</a></div>
+  </li><li class="warn">
+    <div class="finding-q">Does the vendor confirm in writing that your data is NOT used to train its (or anyone's) AI models?<span class="crit">★ Critical</span></div>
+    <div class="finding-a"><span>Answer:</span><span class="chip yel">Implied, not explicit</span></div>
+    <div class="finding-ev"><div>Conflicting public statements found. Superhuman's blog states &quot;Neither Mail nor any vendor trains on your data&quot; and that they have &quot;not and will not opt-in to sharing user data with OpenAI for model training.&quot; However, Grammarly's privacy policy (which now governs Superhuman post-acquisition) states users &quot;can decide whether Superhuman can use your user content to train our AI models by adjusting the available training control(s)&quot; — implying training is possible by default unless a user opts out. This contradiction is a critical open item: get it resolved in writing, in the DPA or a signed addendum, before approval.<span class="src">Source: <a href="https://grammarly.com/privacy-policy" target="_blank" rel="noopener">https://grammarly.com/privacy-policy</a></span></div></div>
+    <div class="policy-line policy-gap"><span class="policy-lbl">NOCCCD policy</span><span class="policy-gap-note">△ Not yet covered by adopted District policy — NOCCCD has not yet adopted a numbered AI-specific Board Policy (a District AI policy was in first-read/discussion with academic senates Nov 2025–Mar 2026, not finalized as of this review). The nearest applicable requirement is AP 3722 §9.0's data-sharing agreement mandate — confirm this item in writing with the vendor and route through that process until a dedicated AI policy is adopted.</span></div>
+  </li><li class="warn">
+    <div class="finding-q">Do the AI sub-processors offer a zero-retention / no-training mode, and does the vendor use it?</div>
+    <div class="finding-a"><span>Answer:</span><span class="chip yel">Available, unconfirmed</span></div>
+    <div class="finding-ev"><div>Confirmed Zero Data Retention agreement with OpenAI specifically (&quot;data will not be saved or retained by OpenAI&quot;). No public confirmation that equivalent zero-retention terms apply to the other two disclosed AI sub-processors (Anthropic, Azure) — ask the vendor to confirm in writing for all three.<span class="src">Source: <a href="https://blog.superhuman.com/superhuman-soc-2-compliant-data-privacy/" target="_blank" rel="noopener">https://blog.superhuman.com/superhuman-soc-2-compliant-data-privacy/</a></span></div></div>
+    <div class="policy-line policy-gap"><span class="policy-lbl">NOCCCD policy</span><span class="policy-gap-note">△ Not yet covered by adopted District policy — NOCCCD has not yet adopted a numbered AI-specific Board Policy (a District AI policy was in first-read/discussion with academic senates Nov 2025–Mar 2026, not finalized as of this review). The nearest applicable requirement is AP 3722 §9.0's data-sharing agreement mandate — confirm this item in writing with the vendor and route through that process until a dedicated AI policy is adopted.</span></div>
+  </li><li class="warn">
+    <div class="finding-q">Are the OAuth permissions it requests appropriate (least privilege)?</div>
+    <div class="finding-a"><span>Answer:</span><span class="chip yel">Broad but explainable</span></div>
+    <div class="finding-ev"><div>Exact OAuth scope strings aren't published. Confirmed only that sign-in requests access to Gmail/Outlook mail, calendar, and contacts, with help documentation referring to a &quot;grant full permissions&quot; prompt — broader than a narrow read-only scope, though functionally explainable for an email client.<span class="src">Source: <a href="https://help.superhuman.com/" target="_blank" rel="noopener">https://help.superhuman.com/</a></span></div></div>
+    <div class="policy-line"><span class="policy-lbl">NOCCCD policy</span><a class="policy-chip" href="https://www.nocccd.edu/documents/ap-3720-computer-and-electronic-communication-systems" target="_blank" rel="noopener" title="§6.0 requires a written information-security program, including annual risk assessments, and requires the District to “select and retain service providers capable of maintaining appropriate safeguards” and bind them by contract to do so.">AP 3720</a></div>
+  </li><li class="warn">
+    <div class="finding-q">Is there a documented incident-response / breach-notification process?</div>
+    <div class="finding-a"><span>Answer:</span><span class="chip yel">Mentioned, no detail</span></div>
+    <div class="finding-ev"><div>Trust Center references &quot;designated response personnel, forensic retainers, and formal incident reporting processes&quot; as part of its BC/DR documentation, but no standalone public incident-response/breach-notification policy page was found beyond that summary.<span class="src">Source: <a href="https://trust.superhuman.com/" target="_blank" rel="noopener">https://trust.superhuman.com/</a></span></div></div>
+    <div class="policy-line"><span class="policy-lbl">NOCCCD policy</span><a class="policy-chip" href="https://www.nocccd.edu/documents/ap-3720-computer-and-electronic-communication-systems" target="_blank" rel="noopener" title="§6.0 requires a written information-security program, including annual risk assessments, and requires the District to “select and retain service providers capable of maintaining appropriate safeguards” and bind them by contract to do so.">AP 3720</a></div>
+  </li><li class="warn">
+    <div class="finding-q">Are there business-continuity / uptime commitments (SLA)?</div>
+    <div class="finding-a"><span>Answer:</span><span class="chip yel">Informal</span></div>
+    <div class="finding-ev"><div>A public status page exists (status.superhuman.com) showing real-time component status, but no published numeric SLA or uptime commitment (e.g. 99.9%) was found in public sources.<span class="src">Source: <a href="https://status.superhuman.com/" target="_blank" rel="noopener">https://status.superhuman.com/</a></span></div></div>
+    
+  </li></ul>
+    <div class="rpt-section-title">✓ Controls in good standing</div><ul class="findings"><li class="ok">
+    <div class="finding-q">Does the vendor have a current independent security audit (SOC 2 Type II, ISO 27001, or equivalent)?<span class="crit">★ Critical</span></div>
+    <div class="finding-a"><span>Answer:</span><span class="chip grn">Yes — SOC 2 Type II / ISO 27001</span></div>
+    <div class="finding-ev"><div>SOC 2 Type II compliant; also holds ISO/IEC 27001, 27017 (cloud security), 27018 (PII in the cloud), and 27701 (privacy) certifications. Full SOC 2 report is available via the Trust Center on request/NDA, not published in full.<span class="src">Source: <a href="https://trust.superhuman.com/" target="_blank" rel="noopener">https://trust.superhuman.com/</a></span></div></div>
+    <div class="policy-line"><span class="policy-lbl">NOCCCD policy</span><a class="policy-chip" href="https://www.nocccd.edu/documents/ap-3720-computer-and-electronic-communication-systems" target="_blank" rel="noopener" title="§6.0 requires a written information-security program, including annual risk assessments, and requires the District to “select and retain service providers capable of maintaining appropriate safeguards” and bind them by contract to do so.">AP 3720</a></div>
+  </li><li class="ok">
+    <div class="finding-q">Is there a public Trust Center or security page with documentation?</div>
+    <div class="finding-a"><span>Answer:</span><span class="chip grn">Yes, with real documents</span></div>
+    <div class="finding-ev"><div>Trust Center at trust.superhuman.com (SafeBase-powered) hosts a downloadable SOC 2 report, ISO certificates, a pentest report, the sub-processor list, and BC/DR documentation — substantive, not just marketing.<span class="src">Source: <a href="https://trust.superhuman.com/" target="_blank" rel="noopener">https://trust.superhuman.com/</a></span></div></div>
+    <div class="policy-line"><span class="policy-lbl">NOCCCD policy</span><a class="policy-chip" href="https://www.nocccd.edu/documents/ap-3722-district-data-security-standards-end-users" target="_blank" rel="noopener" title="§9.0 requires any third party accessing District data to sign a Confidentiality &amp;amp; Nondisclosure Agreement, and requires a Data-Sharing Agreement approved by the VC of Educational Services &amp;amp; Technology before any data is shared.">AP 3722</a></div>
+  </li><li class="ok">
+    <div class="finding-q">Is data encrypted in transit (TLS) and at rest?<span class="crit">★ Critical</span></div>
+    <div class="finding-a"><span>Answer:</span><span class="chip grn">Both, modern standards</span></div>
+    <div class="finding-ev"><div>&quot;All data is encrypted at rest and in transit, with particularly sensitive data encrypted additionally at the application level.&quot; TLS for network traffic; internal traffic uses Google Cloud ALTS.<span class="src">Source: <a href="https://blog.superhuman.com/superhuman-soc-2-compliant-data-privacy/" target="_blank" rel="noopener">https://blog.superhuman.com/superhuman-soc-2-compliant-data-privacy/</a></span></div></div>
+    <div class="policy-line"><span class="policy-lbl">NOCCCD policy</span><a class="policy-chip" href="https://www.nocccd.edu/documents/ap-3722-district-data-security-standards-end-users" target="_blank" rel="noopener" title="§9.0 requires any third party accessing District data to sign a Confidentiality &amp;amp; Nondisclosure Agreement, and requires a Data-Sharing Agreement approved by the VC of Educational Services &amp;amp; Technology before any data is shared.">AP 3722</a></div>
+  </li><li class="ok">
+    <div class="finding-q">Are the AI sub-processors disclosed (e.g. which LLM provider powers the features)?</div>
+    <div class="finding-a"><span>Answer:</span><span class="chip grn">Yes, clearly listed</span></div>
+    <div class="finding-ev"><div>Sub-processor list at superhuman.com/legal/subprocessors discloses OpenAI, Anthropic, and Azure (Microsoft) as &quot;Generative AI provider,&quot; all US-located.<span class="src">Source: <a href="https://superhuman.com/legal/subprocessors" target="_blank" rel="noopener">https://superhuman.com/legal/subprocessors</a></span></div></div>
+    <div class="policy-line"><span class="policy-lbl">NOCCCD policy</span><a class="policy-chip" href="https://www.nocccd.edu/documents/ap-3722-district-data-security-standards-end-users" target="_blank" rel="noopener" title="§9.0 requires any third party accessing District data to sign a Confidentiality &amp;amp; Nondisclosure Agreement, and requires a Data-Sharing Agreement approved by the VC of Educational Services &amp;amp; Technology before any data is shared.">AP 3722</a></div>
+  </li><li class="ok">
+    <div class="finding-q">Is there a clear data retention and deletion policy?</div>
+    <div class="finding-a"><span>Answer:</span><span class="chip grn">Clear, reasonable</span></div>
+    <div class="finding-ev"><div>DPA commits to returning or securely destroying customer personal data at termination upon written request (subject to legal retention requirements). AI-feature-specific retention is also documented: Ask AI queries &quot;stored to help improve quality and allow for debugging&quot;; Instant Reply / Auto Summarize queries retained 90 days; Write with AI queries not stored.<span class="src">Source: <a href="https://superhuman.com/dpa" target="_blank" rel="noopener">https://superhuman.com/dpa</a></span></div></div>
+    <div class="policy-line"><span class="policy-lbl">NOCCCD policy</span><a class="policy-chip" href="https://www.nocccd.edu/documents/bp-3310-records-retention-and-destruction" target="_blank" rel="noopener" title="Sets Title 5-based retention classes (Permanent / Optional / minimum 3-year Disposable) covering District records, including electronically stored information.">BP/AP 3310</a></div>
+  </li><li class="ok">
+    <div class="finding-q">Will the vendor sign a Data Processing Agreement (DPA)?</div>
+    <div class="finding-a"><span>Answer:</span><span class="chip grn">Yes, standard DPA</span></div>
+    <div class="finding-ev"><div>Standard DPA publicly posted at superhuman.com/dpa, covering GDPR, UK GDPR, and Swiss DPA, structured for Enterprise/Education tiers.<span class="src">Source: <a href="https://superhuman.com/dpa" target="_blank" rel="noopener">https://superhuman.com/dpa</a></span></div></div>
+    <div class="policy-line"><span class="policy-lbl">NOCCCD policy</span><a class="policy-chip" href="https://www.nocccd.edu/documents/ap-3722-district-data-security-standards-end-users" target="_blank" rel="noopener" title="§9.0 requires any third party accessing District data to sign a Confidentiality &amp;amp; Nondisclosure Agreement, and requires a Data-Sharing Agreement approved by the VC of Educational Services &amp;amp; Technology before any data is shared.">AP 3722</a></div>
+  </li><li class="ok">
+    <div class="finding-q">Does it stay clear of student information systems (Banner, Canvas, SIS)?</div>
+    <div class="finding-a"><span>Answer:</span><span class="chip grn">Yes, never touches SIS</span></div>
+    <div class="finding-ev"><div>Superhuman is a personal email client (Gmail/Microsoft 365) with no integration point to student information systems (Banner, Canvas, or similar) in its public feature set.</div></div>
+    <div class="policy-line"><span class="policy-lbl">NOCCCD policy</span><a class="policy-chip" href="https://www.nocccd.edu/documents/bp-5040-student-records-directory-information-and-privacy" target="_blank" rel="noopener" title="NOCCCD's FERPA policy — prohibits disclosure of student personally identifiable information without written consent, apart from narrow directory-information or legal exceptions.">BP/AP 5040</a></div>
+  </li></ul>
+  </div>
+  <div class="rpt-foot">
+    Generated by Signal · a self-service pre-screen aligned to the EDUCAUSE HECVAT 4 framework. This report supports, but does not replace, formal review by the District Information Security Office. Verdict logic: a missing critical control (★) caps the rating at RED; an unconfirmed critical control caps it at YELLOW. Weighted score is the importance-weighted average across answered categories.
+  </div></div>
+  <div class="exp-foot">Exported from <a href="https://github.com/profgarygraves/signal-vetting" target="_blank" rel="noopener">Signal</a> — a self-service HECVAT-aligned pre-screen. This is a static snapshot; it does not update if the source review changes.</div>
+</div>
+</body>
+</html>

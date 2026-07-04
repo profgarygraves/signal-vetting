@@ -12,6 +12,7 @@ A handoff note for picking this project up in Claude Code (or any terminal) and 
 - `README.md` — project overview, rubric logic, customization notes
 - `SETUP.md` — this file
 - `.nojekyll` — empty file that tells GitHub Pages to skip Jekyll processing (optional; the site works without it)
+- `reports/` — published, standalone HTML snapshots of finalized reviews (see "Publishing a report" below), plus `reports/index.html`, a small gallery listing them
 
 ## Target repo
 
@@ -49,9 +50,21 @@ git push
 
 Pages redeploys automatically within a minute or two.
 
+## Publishing a report to NOCCCD
+
+1. Finish and finalize an assessment in the app, then click **⤓ Export shareable page** on the report view — it downloads `<tool-name>-signal-report.html`, a fully self-contained snapshot (no localStorage, no app dependency).
+2. Move that file into `reports/` in this repo, e.g. `reports/superhuman.html`.
+3. Add a card for it in `reports/index.html` (copy an existing `<a class="card">` block and update the name/vendor/verdict/score/date).
+4. `git add reports/ && git commit -m "Publish <tool> report" && git push`
+5. Once Pages redeploys, the report is live at `https://profgarygraves.github.io/signal-vetting/reports/<file>.html` — that's the durable link to hand to NOCCCD. It's a static snapshot: if you re-answer questions in the app later, re-export and replace the file to update it.
+
 ## Where to change the rubric
 
 All questions, weights, critical flags, plain-language explanations, and the glossary live in two JavaScript arrays near the top of the `<script>` block in `index.html`: `RUBRIC` and `GLOSSARY`. Edit those to adjust scoring or wording as the NOCCCD TPRM / HECVAT requirements evolve. Nothing else needs to change.
+
+## Where the NOCCCD policy citations come from
+
+The `POLICIES` object (right above `RUBRIC`) holds every cited Board Policy / Administrative Procedure — number, title, URL, and a one-line summary — verified against the actual PDF text at nocccd.edu, not assumed from generic template numbering. Each rubric question then references policy ids via `policy: [...]`, or, where no adopted NOCCCD policy covers it yet (the AI section — there's no adopted AI-specific BP/AP as of this review), a `policyGap` string explaining that plainly instead of inventing a citation.
 
 ## Ideas parked for later
 
