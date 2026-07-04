@@ -6,8 +6,8 @@
   "purpose": "AI-powered email client layered on Gmail / Microsoft 365 — AI-assisted drafting, triage, and inbox management (Ask AI, Instant Reply, Auto Summarize, Write with AI).",
   "dataTypes": "Faculty/staff email content, calendar, and contacts from an individual Gmail or Microsoft 365 mailbox, connected per user. No student information system (SIS) access.",
   "requester": "Gary Graves — Fullerton College",
-  "created": 1751500000000,
-  "finalized": 1751600000000,
+  "created": 1783105200000,
+  "finalized": 1783180800000,
   "answers": {
     "co_audit": 1,
     "co_trust": 1,
