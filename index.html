@@ -620,18 +620,31 @@ function prescreenResult(a){
   const allAnswered = answeredIds.length===SCREENING_QUESTIONS.length;
   const flagged = SCREENING_QUESTIONS.filter(q=>p[q.id]==='yes');
   const required = flagged.length>0;
-  const touchesConfidential = p.scr_confidential==='yes' || p.scr_student==='yes' || p.scr_employee==='yes';
+
+  // Tier depends on whether the vendor touches confidential info (student,
+  // employee, or otherwise restricted). An unanswered question here is NOT
+  // the same as "No" -- don't let it silently collapse to the lowest tier.
+  const CONF_IDS = ['scr_confidential','scr_student','scr_employee'];
+  const confQs = SCREENING_QUESTIONS.filter(q=>CONF_IDS.includes(q.id));
+  const touchesConfidential = CONF_IDS.some(id=>p[id]==='yes');
+  const unansweredConf = confQs.filter(q=>p[q.id]!=='yes' && p[q.id]!=='no');
+
   let tier=null, tierRationale='';
-  if(!touchesConfidential){
-    tier=3; tierRationale='Does not access, store, or process confidential information (student, employee, or otherwise restricted).';
-  } else if(a.blastRadius==='enterprise'){
-    tier=1; tierRationale='Touches confidential information, and an outage or incident would have enterprise-wide impact.';
-  } else if(a.blastRadius==='department'){
-    tier=2; tierRationale='Touches confidential information; impact of an outage or incident would be contained to a department or individual workflow.';
-  } else if(a.blastRadius==='minimal'){
-    tier=2; tierRationale='Touches confidential information; blast radius is rated minimal, but confidential-data handling alone keeps this above Tier 3 — confirm with Cybersecurity.';
+  if(touchesConfidential){
+    if(a.blastRadius==='enterprise'){
+      tier=1; tierRationale='Touches confidential information, and an outage or incident would have enterprise-wide impact.';
+    } else if(a.blastRadius==='department'){
+      tier=2; tierRationale='Touches confidential information; impact of an outage or incident would be contained to a department or individual workflow.';
+    } else if(a.blastRadius==='minimal'){
+      tier=2; tierRationale='Touches confidential information; blast radius is rated minimal, but confidential-data handling alone keeps this above Tier 3 — confirm with Cybersecurity.';
+    } else {
+      tier=null; tierRationale='Touches confidential information — set the outage/incident impact above to compute a tier.';
+    }
+  } else if(unansweredConf.length){
+    tier=null;
+    tierRationale=`Confidentiality status unresolved — answer "${unansweredConf.map(q=>q.text).join('", "')}" before a tier can be assigned. An unanswered question isn't assumed to be "No."`;
   } else {
-    tier=null; tierRationale='Touches confidential information — set the outage/incident impact below to compute a tier.';
+    tier=3; tierRationale='Does not access, store, or process confidential information (student, employee, or otherwise restricted).';
   }
   return {allAnswered, flagged, required, touchesConfidential, tier, tierRationale};
 }
