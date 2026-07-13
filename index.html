@@ -484,51 +484,6 @@
       <button class="btn sm ghost" onclick="go('library')">‹ Library</button>
     </div>
 
-    <details class="autofill" id="autofill">
-      <summary>
-        <span class="bolt">⚡</span>
-        <span>
-          <span class="af-title">Auto-fill with an AI you already have</span>
-          <div class="af-hint">Signal has no server and no AI of its own — it hands you a prompt, you run it in Claude.ai or ChatGPT (any account, free tier is fine), then bring the answer back here.</div>
-        </span>
-      </summary>
-      <div class="af-body">
-        <ol class="af-steps">
-          <li>
-            <div class="af-step-h"><span class="num">1</span><h4>Give it something to read</h4></div>
-            <p class="af-help">Trust Center / security page URLs (one per line) if you want the AI to browse them itself — <b>and/or</b> paste text directly below: a vendor's email reply, a copied security page, a PDF's contents, whatever you've got. Either works; both together works best.</p>
-            <textarea id="af-urls" placeholder="https://trust.superhuman.com&#10;https://superhuman.com/privacy" rows="2"></textarea>
-            <div class="field" style="margin:10px 0 0">
-              <label>Or paste text directly (email reply, webpage content, PDF text…)</label>
-              <textarea id="af-pasted" placeholder="Paste the vendor's email reply, a copied Trust Center page, or any other source text here." rows="4"></textarea>
-            </div>
-            <label style="display:flex;align-items:center;gap:8px;margin-top:12px;font-size:14.5px;color:var(--ink-soft);cursor:pointer">
-              <input type="checkbox" id="af-gaps-only" style="width:auto">
-              Only ask about questions that are still unanswered <span style="color:var(--ink-faint);font-style:italic">— use this after a vendor follow-up reply, to fill just the gaps</span>
-            </label>
-          </li>
-          <li>
-            <div class="af-step-h"><span class="num">2</span><h4>Run the prompt in Claude.ai or ChatGPT</h4></div>
-            <p class="af-help">This step happens outside Signal: copy the prompt, paste it into a chat with any AI that can browse the web (Claude.ai, ChatGPT, etc.), let it answer, then come back here with its reply.</p>
-            <div class="af-actions">
-              <button class="btn sm" onclick="copyAutofillPrompt()">⎘ Copy prompt to clipboard</button>
-              <button class="btn sm ghost" onclick="previewAutofillPrompt()">Preview prompt</button>
-            </div>
-            <div id="af-preview-wrap"></div>
-          </li>
-          <li>
-            <div class="af-step-h"><span class="num">3</span><h4>Paste the AI's reply here and apply</h4></div>
-            <p class="af-help">Paste its whole reply — Signal pulls the JSON out even if there's extra text around it, code fences, or smart quotes from copy-paste. Nothing is locked afterward; edit any answer by hand.</p>
-            <textarea id="af-json" placeholder='{ "profile": { "name": "Superhuman", ... }, "answers": { "co_audit": { "value": 1, "evidence": "...", "source": "..." }, ... } }' rows="5" spellcheck="false"></textarea>
-            <div class="af-actions">
-              <button class="btn sm" onclick="applyAutofill()">▸ Apply answers</button>
-              <span class="af-status" id="af-status"></span>
-            </div>
-          </li>
-        </ol>
-      </div>
-    </details>
-
     <div class="assess-layout">
       <aside class="rail"><ol id="rail-list"></ol></aside>
       <main id="form-host"></main>
@@ -989,6 +944,57 @@ function setAiKind(val){ current.aiKind=val; saveCurrent(true); }
 function setBlastRadius(val){ current.blastRadius=val; saveCurrent(true); renderPrescreenResultBlock(); }
 function setIntakeField(key,val){ current[key]=val; saveCurrent(true); }
 
+function autofillCardHtml(){
+  const knownBits = [];
+  if((current.name||'').trim()) knownBits.push(`<b>${esc(current.name)}</b>`);
+  if((current.vendor||'').trim()) knownBits.push(esc(current.vendor));
+  const knownLine = knownBits.length
+    ? `Already knows ${knownBits.join(' · ')} from the section above — the prompt below is grounded on that instead of asking the AI to guess it.`
+    : `Signal has no server and no AI of its own — it hands you a prompt, you run it in Claude.ai or ChatGPT (any account, free tier is fine), then bring the answer back here.`;
+  return `<summary>
+      <span class="bolt">⚡</span>
+      <span>
+        <span class="af-title">Auto-fill with an AI you already have</span>
+        <div class="af-hint">${knownLine}</div>
+      </span>
+    </summary>
+    <div class="af-body">
+      <ol class="af-steps">
+        <li>
+          <div class="af-step-h"><span class="num">1</span><h4>Give it something to read</h4></div>
+          <p class="af-help">Trust Center / security page URLs (one per line) if you want the AI to browse them itself — <b>and/or</b> paste text directly below: a vendor's email reply, a copied security page, a PDF's contents, whatever you've got. Either works; both together works best.</p>
+          <textarea id="af-urls" placeholder="https://trust.superhuman.com&#10;https://superhuman.com/privacy" rows="2">${esc(current.url)}</textarea>
+          <div class="field" style="margin:10px 0 0">
+            <label>Or paste text directly (email reply, webpage content, PDF text…)</label>
+            <textarea id="af-pasted" placeholder="Paste the vendor's email reply, a copied Trust Center page, or any other source text here." rows="4"></textarea>
+          </div>
+          <label style="display:flex;align-items:center;gap:8px;margin-top:12px;font-size:14.5px;color:var(--ink-soft);cursor:pointer">
+            <input type="checkbox" id="af-gaps-only" style="width:auto">
+            Only ask about questions that are still unanswered <span style="color:var(--ink-faint);font-style:italic">— use this after a vendor follow-up reply, to fill just the gaps</span>
+          </label>
+        </li>
+        <li>
+          <div class="af-step-h"><span class="num">2</span><h4>Run the prompt in Claude.ai or ChatGPT</h4></div>
+          <p class="af-help">This step happens outside Signal: copy the prompt, paste it into a chat with any AI that can browse the web (Claude.ai, ChatGPT, etc.), let it answer, then come back here with its reply.</p>
+          <div class="af-actions">
+            <button class="btn sm" onclick="copyAutofillPrompt()">⎘ Copy prompt to clipboard</button>
+            <button class="btn sm ghost" onclick="previewAutofillPrompt()">Preview prompt</button>
+          </div>
+          <div id="af-preview-wrap"></div>
+        </li>
+        <li>
+          <div class="af-step-h"><span class="num">3</span><h4>Paste the AI's reply here and apply</h4></div>
+          <p class="af-help">Paste its whole reply — Signal pulls the JSON out even if there's extra text around it, code fences, or smart quotes from copy-paste. Nothing is locked afterward; edit any answer by hand.</p>
+          <textarea id="af-json" placeholder='{ "profile": { "name": "Superhuman", ... }, "answers": { "co_audit": { "value": 1, "evidence": "...", "source": "..." }, ... } }' rows="5" spellcheck="false"></textarea>
+          <div class="af-actions">
+            <button class="btn sm" onclick="applyAutofill()">▸ Apply answers</button>
+            <span class="af-status" id="af-status"></span>
+          </div>
+        </li>
+      </ol>
+    </div>`;
+}
+
 /* ---------- build the form ---------- */
 function buildForm(){
   const host = document.getElementById('form-host');
@@ -1054,12 +1060,32 @@ function buildForm(){
     inner += `</div>`;
     card.innerHTML = inner;
     host.appendChild(card);
+
+    // Auto-fill lives right after "the tool & its data" — by the time you get here,
+    // Signal already knows enough to hand a grounded prompt to whatever AI you use.
+    if(sec.profile){
+      const afCard = document.createElement('details');
+      afCard.className = "autofill"; afCard.id = "autofill";
+      if((current.name||'').trim() || (current.url||'').trim()) afCard.open = true;
+      afCard.innerHTML = autofillCardHtml();
+      host.appendChild(afCard);
+    }
   });
 
   // profile listeners
   ['name|f_name','vendor|f_vendor','url|f_url','purpose|f_purpose','dataTypes|f_data','requester|f_req'].forEach(p=>{
     const [k,id]=p.split('|'); const el=document.getElementById(id);
-    if(el) el.addEventListener('input',()=>{ current[k]=el.value; saveCurrent(true); updateScore(); });
+    if(el) el.addEventListener('input',()=>{
+      current[k]=el.value; saveCurrent(true); updateScore();
+      if(k==='url'){
+        const afUrls=document.getElementById('af-urls');
+        if(afUrls && !afUrls.value.trim()) afUrls.value = el.value;
+      }
+      if(k==='name' || k==='url'){
+        const afDetails=document.getElementById('autofill');
+        if(afDetails && el.value.trim()) afDetails.open = true;
+      }
+    });
   });
 
   // score bar
@@ -1507,16 +1533,29 @@ function buildAutofillPrompt(urlsRaw, pastedText, gapsOnly){
   });
   const gapsNote = gapsOnly ? `\nThis is a FOLLOW-UP pass — only the questions still unanswered from the first review are listed below. Ignore any other rubric areas.\n` : '';
 
+  const PROFILE_FIELDS = [
+    {k:'name', label:'name', hint:'short product name (e.g. "Superhuman")'},
+    {k:'vendor', label:'vendor', hint:'legal company name'},
+    {k:'purpose', label:'purpose', hint:'one sentence on what the product does'},
+    {k:'dataTypes', label:'dataTypes', hint:'what institutional data it would touch in a typical deployment (be specific — "faculty email content from one mailbox" not just "email")'}
+  ];
+  const knownFields = current ? PROFILE_FIELDS.filter(f=>(current[f.k]||'').trim()) : [];
+  const missingFields = PROFILE_FIELDS.filter(f=>!knownFields.includes(f));
+  let profileBlock = '';
+  if(knownFields.length){
+    profileBlock += `Already known — echo these back in the profile object exactly as given, don't re-derive them:\n${knownFields.map(f=>`- ${f.label}: "${current[f.k]}"`).join('\n')}\n`;
+  }
+  if(missingFields.length){
+    profileBlock += `${knownFields.length?'\n':''}Extract these from the sources if available (skip a field if you don't have evidence for it):\n${missingFields.map(f=>`- ${f.label}: ${f.hint}`).join('\n')}`;
+  }
+
   return `You are evaluating a vendor's security & privacy posture for a higher-education institution's third-party risk review. The rubric is aligned to EDUCAUSE HECVAT 4. Read the sources below and return structured JSON answers.
 
 # SOURCES
 ${sourceBlock}
 
-# PROFILE — extract if available (skip fields you don't have evidence for)
-- name: short product name (e.g. "Superhuman")
-- vendor: legal company name
-- purpose: one sentence on what the product does
-- dataTypes: what institutional data it would touch in a typical deployment (be specific — "faculty email content from one mailbox" not just "email")
+# PROFILE
+${profileBlock}
 
 # QUESTIONS${gapsNote}
 For each question, pick the option whose VALUE best matches the documented position. Use null if not documented — do NOT guess. Questions marked ★ are CRITICAL: a missing critical control caps the verdict at RED.
