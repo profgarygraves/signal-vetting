@@ -857,6 +857,15 @@ function persist(){ localStorage.setItem(LS_KEY, JSON.stringify(store)); }
 function uid(){ return 'a'+Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
 
 /* ---------- navigation ---------- */
+const DEFAULT_TITLE = 'Signal — AI & Vendor Risk Vetting';
+// Every export path (Print/Save PDF, JSON, standalone page) uses this so files
+// from different companies never collide in a Downloads folder, and Print's
+// browser-suggested filename (which comes from document.title) is correct too.
+function reportFilenameBase(name){
+  const clean = (name||'Untitled Tool').trim().replace(/[\\/:*?"<>|]/g,'-');
+  return `Signal Vendor Vetting - ${clean}`;
+}
+
 function go(view){
   // Any nav away from the report exits shared-view mode (boot() is the only thing that enters it)
   if(view !== 'report') isSharedView = false;
@@ -866,6 +875,7 @@ function go(view){
   window.scrollTo({top:0,behavior:'instant'});
   if(view==='library') renderLibrary();
   if(view==='learn') renderLearn();
+  if(view!=='report') document.title = DEFAULT_TITLE;
 }
 
 /* ---------- create / edit ---------- */
@@ -1330,6 +1340,9 @@ function findingLi(q, v, note, kind){
 function renderReport(a){
   document.getElementById('report-host').innerHTML = buildReportHtml(a);
   renderReportActions();
+  // Print/Save PDF suggests document.title as the filename — set it per-company
+  // so printing two different reports doesn't offer the same generic filename.
+  document.title = reportFilenameBase(a.name);
 }
 function buildReportHtml(a){
   const s=scoreOf(a);
@@ -1510,7 +1523,7 @@ function renderLearn(){
 function exportJSON(){
   const blob=new Blob([JSON.stringify(current,null,2)],{type:'application/json'});
   const url=URL.createObjectURL(blob); const a=document.createElement('a');
-  a.href=url; a.download=(current.name||'assessment').replace(/\s+/g,'_')+'_signal.json'; a.click();
+  a.href=url; a.download=reportFilenameBase(current.name)+'.json'; a.click();
   URL.revokeObjectURL(url);
 }
 
@@ -2243,6 +2256,8 @@ function buildStandaloneReportHtml(a){
 </body>
 </html>`;
 }
+// URL-safe slug, used only for the /reports/<slug>.html convention when publishing to the repo —
+// kept distinct from the human-readable download filename, which can have spaces/mixed case.
 function slugify(s){ return (s||'untitled').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'')||'untitled'; }
 function exportStandaloneReport(){
   if(!current){ toast('No report to export'); return; }
@@ -2250,9 +2265,9 @@ function exportStandaloneReport(){
   const blob = new Blob([html], {type:'text/html'});
   const url = URL.createObjectURL(blob);
   const el = document.createElement('a');
-  el.href = url; el.download = slugify(current.name)+'-signal-report.html'; el.click();
+  el.href = url; el.download = reportFilenameBase(current.name)+'.html'; el.click();
   URL.revokeObjectURL(url);
-  toast('Standalone report page downloaded — commit it to /reports/ to publish a stable link');
+  toast(`Downloaded — to publish, rename it to reports/${slugify(current.name)}.html in the repo`);
 }
 
 /* ---------- boot (handles #share=...) ---------- */
