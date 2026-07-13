@@ -944,18 +944,20 @@ function setAiKind(val){ current.aiKind=val; saveCurrent(true); }
 function setBlastRadius(val){ current.blastRadius=val; saveCurrent(true); renderPrescreenResultBlock(); }
 function setIntakeField(key,val){ current[key]=val; saveCurrent(true); }
 
-function autofillCardHtml(){
+function autofillHintLine(){
   const knownBits = [];
   if((current.name||'').trim()) knownBits.push(`<b>${esc(current.name)}</b>`);
   if((current.vendor||'').trim()) knownBits.push(esc(current.vendor));
-  const knownLine = knownBits.length
+  return knownBits.length
     ? `Already knows ${knownBits.join(' · ')} from the section above — the prompt below is grounded on that instead of asking the AI to guess it.`
     : `Signal has no server and no AI of its own — it hands you a prompt, you run it in Claude.ai or ChatGPT (any account, free tier is fine), then bring the answer back here.`;
+}
+function autofillCardHtml(){
   return `<summary>
       <span class="bolt">⚡</span>
       <span>
         <span class="af-title">Auto-fill with an AI you already have</span>
-        <div class="af-hint">${knownLine}</div>
+        <div class="af-hint" id="af-hint">${autofillHintLine()}</div>
       </span>
     </summary>
     <div class="af-body">
@@ -1069,6 +1071,8 @@ function buildForm(){
       if((current.name||'').trim() || (current.url||'').trim()) afCard.open = true;
       afCard.innerHTML = autofillCardHtml();
       host.appendChild(afCard);
+      const afUrlsInit = document.getElementById('af-urls');
+      if(afUrlsInit) afUrlsInit.dataset.mirrored = afUrlsInit.value;
     }
   });
 
@@ -1078,8 +1082,16 @@ function buildForm(){
     if(el) el.addEventListener('input',()=>{
       current[k]=el.value; saveCurrent(true); updateScore();
       if(k==='url'){
+        // Keep mirroring the URL into af-urls as long as the user hasn't hand-edited it
+        // themselves — track what we last wrote there so a manual edit stops the sync.
         const afUrls=document.getElementById('af-urls');
-        if(afUrls && !afUrls.value.trim()) afUrls.value = el.value;
+        if(afUrls && (afUrls.value.trim()==='' || afUrls.value===afUrls.dataset.mirrored)){
+          afUrls.value = el.value; afUrls.dataset.mirrored = el.value;
+        }
+      }
+      if(k==='name' || k==='vendor'){
+        const afHint=document.getElementById('af-hint');
+        if(afHint) afHint.innerHTML = autofillHintLine();
       }
       if(k==='name' || k==='url'){
         const afDetails=document.getElementById('autofill');
