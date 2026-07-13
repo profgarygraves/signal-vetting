@@ -1629,6 +1629,46 @@ function setAfStatus(msg, kind){
   el.textContent=msg; el.className='af-status '+(kind||'');
 }
 
+/* Repairs the most common way LLMs break JSON: a literal "quoted phrase"
+   left unescaped inside a string value (e.g. evidence text that quotes the
+   vendor verbatim). Re-scans string content and escapes any quote that
+   ISN'T actually closing the string — i.e. not followed, after optional
+   whitespace, by a JSON structural character (: , } ] or end of input).
+   A no-op on already-valid JSON, since real closing quotes always are. */
+function repairUnescapedQuotes(str){
+  let out='', inString=false;
+  for(let i=0;i<str.length;i++){
+    const c=str[i];
+    if(!inString){
+      out+=c;
+      if(c==='"') inString=true;
+      continue;
+    }
+    if(c==='\\'){ out+=c+(str[i+1]||''); i++; continue; }
+    if(c==='"'){
+      let j=i+1;
+      while(j<str.length && /\s/.test(str[j])) j++;
+      const next=str[j];
+      if(next===':'||next===','||next==='}'||next===']'||next===undefined){
+        out+=c; inString=false;
+      } else {
+        out+='\\"';
+      }
+      continue;
+    }
+    out+=c;
+  }
+  return out;
+}
+/* ChatGPT often cites sources as markdown links even when asked for plain
+   JSON — "[https://x.com](https://x.com)" instead of "https://x.com". That
+   fails Signal's isUrl check and renders as plain text, not a link. */
+function stripMarkdownLink(src){
+  const m = src.match(/^\[([^\]]*)\]\(([^)]*)\)$/);
+  if(!m) return src;
+  return (m[2] && /^https?:\/\//i.test(m[2])) ? m[2] : (m[1] || src);
+}
+
 function applyAutofill(){
   const raw=(document.getElementById('af-json').value||'').trim();
   if(!raw){ setAfStatus('Paste the JSON response first.', 'err'); return; }
@@ -1652,11 +1692,21 @@ function applyAutofill(){
     .replace(/,(\s*[}\]])/g, '$1');               // trailing commas
   const normalized = (jsonStr !== before);
 
-  let data;
+  let data, repaired=false;
   try{ data=JSON.parse(jsonStr); }
-  catch(e){
-    const tip = normalized ? '' : ' (Tip: paste only the JSON object — strip any surrounding prose.)';
-    setAfStatus('Could not parse JSON: '+e.message+tip, 'err'); return;
+  catch(e1){
+    // Common LLM mistake: literal "quoted phrases" inside a JSON string value,
+    // left unescaped (e.g. "evidence": "it says "no training" in writing").
+    // Re-scan and escape any quote that isn't actually ending the string —
+    // i.e. not followed (after optional whitespace) by a JSON structural char.
+    try{
+      const fixedStr = repairUnescapedQuotes(jsonStr);
+      data = JSON.parse(fixedStr);
+      repaired = true;
+    } catch(e2){
+      const tip = normalized ? '' : ' (Tip: paste only the JSON object — strip any surrounding prose.)';
+      setAfStatus('Could not parse JSON: '+e1.message+tip, 'err'); return;
+    }
   }
 
   let filled=0, nulls=0, invalid=0, notes=0;
@@ -1680,7 +1730,7 @@ function applyAutofill(){
         else invalid++;
       } else nulls++;
       if(typeof a.evidence==='string' && a.evidence.trim()){
-        const src=(typeof a.source==='string' && a.source.trim()) ? ` (source: ${a.source.trim()})` : '';
+        const src=(typeof a.source==='string' && a.source.trim()) ? ` (source: ${stripMarkdownLink(a.source.trim())})` : '';
         const newNote=a.evidence.trim()+src;
         const existing=current.notes[q.id]||'';
         if(!existing.includes(a.evidence.trim())){
@@ -1694,6 +1744,7 @@ function applyAutofill(){
   saveCurrent(true);
   buildForm();
   const bits=[`Applied ${filled} of ${allQs.length} answers`];
+  if(repaired) bits.push('auto-fixed unescaped quotes in the JSON');
   if(nulls) bits.push(`${nulls} marked unknown`);
   if(invalid) bits.push(`${invalid} invalid (skipped)`);
   if(notes) bits.push(`${notes} evidence notes added`);
